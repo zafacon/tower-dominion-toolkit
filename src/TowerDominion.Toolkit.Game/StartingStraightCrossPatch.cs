@@ -177,22 +177,7 @@ internal static class StartingBasicOrientationPatch
             // The north/south visual offset is verified for L and bare T.
             // Visual testing showed T.C rendering as T.A on every face, so
             // invert only the lateral branch of oriented T at the native boundary.
-            CardinalPaths desired = requested.Paths;
-            if (requested.Shape == StartShape.T)
-            {
-                CardinalPaths towardHq = StartingTiles.HqFacing(requested.Position);
-                CardinalPaths outward = StartingTiles.Rotate(towardHq, 180);
-                if ((desired & outward) != 0)
-                {
-                    CardinalPaths clockwise = StartingTiles.TurnClockwise(towardHq);
-                    CardinalPaths anticlockwise = StartingTiles.TurnAnticlockwise(towardHq);
-                    desired = towardHq | outward |
-                        ((desired & clockwise) != 0 ? anticlockwise : clockwise);
-                }
-            }
-            CardinalPaths target = requested.Position is StartPosition.N or StartPosition.S
-                ? StartingTiles.Rotate(desired, 180)
-                : desired;
+            CardinalPaths target = StartingTileVisualPaths.ForNativeZone(requested);
             if (paths != target) continue;
             MelonLoader.MelonLogger.Msg($"[StartingTiles] {StartingTilePresets.Format(requested)} rotation={angle} nativePaths={paths} requestedPaths={requested.Paths} diagnosticNS={target != requested.Paths}");
             return;

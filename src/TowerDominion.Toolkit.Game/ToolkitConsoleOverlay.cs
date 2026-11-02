@@ -10,6 +10,10 @@ namespace TowerDominion.Toolkit.Game;
 internal sealed class ToolkitConsoleOverlay
 {
     private const int VisibleLines = 18;
+    private static readonly Color BackdropColor = new(0.075f, 0.085f, 0.105f, 0.95f);
+    private static readonly Color PanelColor = new(0.045f, 0.055f, 0.075f, 0.98f);
+    private static Texture2D? backdropTexture;
+    private static Texture2D? panelTexture;
     private readonly CommandRegistry commands;
     private readonly EntityCatalog catalog;
     private readonly StartingTilePresets? tilePresets;
@@ -81,7 +85,10 @@ internal sealed class ToolkitConsoleOverlay
         float height = Math.Min(510, Screen.height - 30);
         float left = (Screen.width - width) / 2;
         float top = 15;
+        DrawBackground(new Rect(left, top, width, height), BackdropColor);
         GUI.Box(new Rect(left, top, width, height), "Tower Dominion Toolkit");
+        DrawBackground(new Rect(left + 9, top + 27, width - 18, height - 112), PanelColor);
+        DrawBackground(new Rect(left + 9, top + height - 79, width - 18, 34), PanelColor);
         int lines = Math.Max(1, Math.Min(VisibleLines, (int)((height - 115) / 19)));
         int start = Math.Max(0, output.Count - lines - scroll);
         int end = Math.Min(output.Count, start + lines);
@@ -102,6 +109,29 @@ internal sealed class ToolkitConsoleOverlay
             StartingTileMosaic.DrawMap(new Rect(left + width * 0.53f, top + 45, width * 0.27f, width * 0.3f), legacyPreview, "Legacy tileset");
         GUI.Label(new Rect(left + 15, top + height - 72, width - 30, 24), "> " + input.Insert(Math.Clamp(cursor, 0, input.Length), "|"));
         GUI.Label(new Rect(left + 15, top + height - 46, width - 30, 22), "Enter execute | Tab complete | Up/Down history | Page Up/Down scroll | ` or Esc close");
+    }
+
+    private static void DrawBackground(Rect area, Color tint)
+    {
+        // Reuse the GUI.Box texture path already exercised by StartingTileMosaic;
+        // GUI.DrawTexture/Texture2D.whiteTexture are not reliably unstripped in IL2CPP.
+        Texture2D? texture = tint.a == BackdropColor.a ? backdropTexture : panelTexture;
+        if (texture == null)
+        {
+            texture = new Texture2D(1, 1);
+            texture.SetPixels(new[] { tint });
+            texture.Apply();
+            if (tint.a == BackdropColor.a) backdropTexture = texture;
+            else panelTexture = texture;
+        }
+        var style = GUI.skin.box;
+        var previous = style.normal.background;
+        try
+        {
+            style.normal.background = texture;
+            GUI.Box(area, "", style);
+        }
+        finally { style.normal.background = previous; }
     }
 
     internal void Dispose() => SetVisible(false);

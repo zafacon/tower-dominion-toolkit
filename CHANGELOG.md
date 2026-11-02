@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [0.1.1] — Preview and console improvements
+
+- Improved console readability with opaque background and panels.
+- Fixed IL2CPP-compatible rendering of console panel backgrounds.
+- Corrected starting-tile preview orientation using HQ-outward clockwise/anticlockwise conventions, without changing game placement.
 - Expanded console help to cover command variants and focused topics.
 - Clarified relative starting-tile configuration syntax.
 

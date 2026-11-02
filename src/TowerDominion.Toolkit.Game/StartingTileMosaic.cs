@@ -79,7 +79,7 @@ internal static class StartingTileMosaic
             var pos = entry.Key;
             int col = pos == StartPosition.W ? 0 : pos == StartPosition.E ? 2 : 1;
             int row = pos == StartPosition.N ? 0 : pos == StartPosition.S ? 2 : 1;
-            PaintRoad(pixels, col * Tile, row * Tile, entry.Value.Paths);
+            PaintRoad(pixels, col * Tile, row * Tile, StartingTileVisualPaths.ForPreview(entry.Value));
         }
         // Subtle grid lines, drawn only where there is no road.
         for (int i = 1; i < 3; i++)
@@ -141,7 +141,7 @@ internal static class StartingTileMosaic
             var pos = entry.Key;
             int col = pos == StartPosition.W ? 0 : pos == StartPosition.E ? 2 : 1;
             int row = pos == StartPosition.N ? 0 : pos == StartPosition.S ? 2 : 1;
-            FallbackRoad(ox + col * side, oy + row * side, side, entry.Value.Paths);
+            FallbackRoad(ox + col * side, oy + row * side, side, StartingTileVisualPaths.ForPreview(entry.Value));
         }
     }
 
