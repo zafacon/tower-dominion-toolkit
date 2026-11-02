@@ -39,6 +39,16 @@ No game binaries or proprietary assets are distributed here.
 
 The existing `tower-dominion-console` repository remains independent and untouched.
 
+## How this was made
+
+Tower Dominion Toolkit was developed collaboratively by **Pablo Castañeda** and **OpenAI's ChatGPT**. Pablo directed the feature design, defined the expected gameplay behavior, and tested changes in the running game. ChatGPT assisted with inspecting game interfaces, implementing the mod, debugging, documentation, and automated tests.
+
+- **Game integration:** The Toolkit uses MelonLoader and the game's generated IL2CPP C# bindings to observe and interact with Tower Dominion. It keeps game-specific integration separate from shared model contracts and capability modules.
+- **Iterative gameplay testing:** Features were implemented in small increments and checked in live runs, including enemy and final-wave bans, Frontier modifier selection and scoring, seed overrides, starting-tile layouts, and the in-game console.
+- **Automated verification:** Unit and integration-style tests cover the game-independent contracts and command behavior. Live game testing remains necessary for Unity UI and runtime patches.
+
+This is an independent community mod, not an official Tower Dominion project. **Review the code before using it**, as with any third-party mod; issues and corrections are welcome.
+
 ## License
 
 MIT © 2026 Game Familiar. See [LICENSE](LICENSE).
