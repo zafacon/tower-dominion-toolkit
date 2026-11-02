@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TowerDominion.Toolkit.Game/TowerDominion.Toolkit.Game.csproj" />
+    <Project Path="src/TowerDominion.Toolkit.Interfaces.Console/TowerDominion.Toolkit.Interfaces.Console.csproj" />
+    <Project Path="src/TowerDominion.Toolkit.Model/TowerDominion.Toolkit.Model.csproj" />
+    <Project Path="src/TowerDominion.Toolkit.Modules/TowerDominion.Toolkit.Modules.csproj" />
+    <Project Path="src/TowerDominion.Toolkit.Runtime/TowerDominion.Toolkit.Runtime.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TowerDominion.Toolkit.Tests/TowerDominion.Toolkit.Tests.csproj" />
+  </Folder>
+</Solution>

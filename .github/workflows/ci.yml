@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test game-independent components
+        run: dotnet test tests/TowerDominion.Toolkit.Tests/TowerDominion.Toolkit.Tests.csproj --configuration Release --nologo
+      - name: Check formatting of game-independent projects
+        run: |
+          dotnet format whitespace tests/TowerDominion.Toolkit.Tests/TowerDominion.Toolkit.Tests.csproj --verify-no-changes --no-restore

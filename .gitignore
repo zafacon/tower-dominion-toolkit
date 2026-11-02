@@ -1,0 +1,26 @@
+**/bin/
+**/obj/
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.cache
+*.zip
+*.tar.gz
+local.settings.json
+
+dist/
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.local.json
+*.pem
+*.p12
+*.pfx
+*.key
+*.log
+*.bak
+*.swp

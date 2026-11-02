@@ -1,0 +1,26 @@
+<Project>
+  <Target Name="ToolkitCaptureBuildRevision" BeforeTargets="GenerateAssemblyInfo;CoreCompile">
+    <Exec Command="git -C &quot;$(MSBuildThisFileDirectory)&quot; rev-parse --short=12 HEAD"
+          ConsoleToMSBuild="true" IgnoreExitCode="true" StandardOutputImportance="Low">
+      <Output TaskParameter="ConsoleOutput" ItemName="_ToolkitGitOutput" />
+      <Output TaskParameter="ExitCode" PropertyName="_ToolkitGitExitCode" />
+    </Exec>
+    <PropertyGroup>
+      <ToolkitCommit Condition="'$(_ToolkitGitExitCode)' == '0' and '@(_ToolkitGitOutput)' != ''">@(_ToolkitGitOutput)</ToolkitCommit>
+      <ToolkitCommit Condition="'$(ToolkitCommit)' == ''">unknown</ToolkitCommit>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(MSBuildProjectName)' == 'TowerDominion.Toolkit.Model'">
+      <_ToolkitBuildInfoLine Include="namespace TowerDominion.Toolkit.Model%3B" />
+      <_ToolkitBuildInfoLine Include="public static class ToolkitBuildInfo" />
+      <_ToolkitBuildInfoLine Include="{" />
+      <_ToolkitBuildInfoLine Include="    public const string Name = &quot;Tower Dominion Toolkit&quot;%3B" />
+      <_ToolkitBuildInfoLine Include="    public const string Version = &quot;$(Version)&quot;%3B" />
+      <_ToolkitBuildInfoLine Include="    public const string Commit = &quot;$(ToolkitCommit)&quot;%3B" />
+      <_ToolkitBuildInfoLine Include="}" />
+      <Compile Include="$(IntermediateOutputPath)ToolkitBuildInfo.g.cs" />
+    </ItemGroup>
+    <WriteLinesToFile Condition="'$(MSBuildProjectName)' == 'TowerDominion.Toolkit.Model'"
+                      File="$(IntermediateOutputPath)ToolkitBuildInfo.g.cs"
+                      Lines="@(_ToolkitBuildInfoLine)" Overwrite="true" />
+  </Target>
+</Project>
