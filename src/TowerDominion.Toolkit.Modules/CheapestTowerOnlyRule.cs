@@ -11,7 +11,7 @@ public sealed class CheapestTowerOnlyRule : IChallengeRule
         Id, "Cheapest Tower Only",
         "Only towers tied for the lowest effective cost in hand may be placed.",
         new HashSet<ChallengeActionKind> { ChallengeActionKind.PlaceTower },
-        Author: "@DiVerrencia");
+        Author: "DiVerrencia");
 
     public ChallengeDecision Evaluate(ChallengeAction action)
     {

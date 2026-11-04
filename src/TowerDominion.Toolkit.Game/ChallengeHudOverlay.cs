@@ -19,22 +19,54 @@ internal sealed class ChallengeHudOverlay
     private RectTransform? cachedTech;
     private RectTransform? cachedLifebar;
     private float nextPositionLookup;
+    private float nextHudRetry;
 
     internal ChallengeHudOverlay(ChallengeRegistry registry) => this.registry = registry;
+    internal bool IsPopupVisible => popup?.IsVisible == true;
 
     internal void Draw()
     {
         var selection = ToolkitMod.SavedChallenges;
         bool visible = selection?.RunActive == true && selection.Active.Count > 0;
-        if (!visible) popup?.Hide();
-        if (visible)
+        if (!visible)
+        {
+            popup?.Hide();
+            HideNativeButton();
+            InvalidatePositionReferences();
+            return;
+        }
+        if (Time.unscaledTime < nextHudRetry) return;
+        try
         {
             EnsureNativeUi();
             UpdatePosition();
+            if (nativeButton != null) nativeButton.gameObject.SetActive(true);
+            popup?.Refresh(true, ChallengeDisplay.Describe(registry,
+                ChallengeDisplay.VisibleIds(selection!, inRun: true)));
         }
-        if (nativeButton != null) nativeButton.gameObject.SetActive(visible);
-        popup?.Refresh(visible, visible && selection != null
-            ? ChallengeDisplay.Describe(registry, ChallengeDisplay.VisibleIds(selection, inRun: true)) : "");
+        catch (Il2CppInterop.Runtime.Il2CppException exception)
+        {
+            // The post-game inspection scene may destroy the gameplay header
+            // before MainLoopContext.Stop releases the run snapshot.
+            MelonLogger.Warning($"[Toolkit Challenges] Gameplay HUD unavailable: {exception.Message}");
+            InvalidatePositionReferences();
+            nextHudRetry = Time.unscaledTime + 2f;
+            HideNativeButton();
+            popup?.Hide();
+        }
+    }
+
+    private void HideNativeButton()
+    {
+        try { if (nativeButton != null) nativeButton.gameObject.SetActive(false); }
+        catch (Il2CppInterop.Runtime.Il2CppException) { nativeButton = null; popup = null; }
+    }
+
+    private void InvalidatePositionReferences()
+    {
+        cachedTech = null;
+        cachedLifebar = null;
+        nextPositionLookup = 0f;
     }
 
     private static void AddPanelLayer(Transform parent, string name, Color color,

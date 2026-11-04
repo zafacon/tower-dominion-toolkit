@@ -28,6 +28,7 @@ public sealed class ToolkitMod : MelonMod
     private ToolkitConsoleOverlay? consoleOverlay;
     private ChallengeHudOverlay? challengeHud;
     private ChallengePreRunOverlay? challengePreRun;
+    private ChainOfCommandFrontierOverlay? chainFrontier;
     private GameCatalogAdapter? catalogAdapter;
     private CommandGrammar? canonicalGrammar;
     private ModuleCoordinator? coordinator;
@@ -104,10 +105,15 @@ public sealed class ToolkitMod : MelonMod
         {
             challengeRegistry = new ChallengeRegistry();
             challengeRegistry.Register(new CheapestTowerOnlyRule());
+            challengeRegistry.Register(new ChainOfCommandRule());
+            challengeRegistry.Register(new LeftTurnOnlyRule());
+            challengeRegistry.Register(new EightBallRule());
+            challengeRegistry.Register(new FrozenLogisticsRule());
             SavedChallenges = new ChallengeSelections(Path.Combine(toolkitDirectory, "challenge-selection.json"), challengeRegistry);
             ChallengeRules = new ChallengeEnforcement(challengeRegistry, SavedChallenges);
             challengeHud = new ChallengeHudOverlay(challengeRegistry);
             challengePreRun = new ChallengePreRunOverlay(challengeRegistry);
+            chainFrontier = new ChainOfCommandFrontierOverlay();
         }
         catch (Exception exception)
         {
@@ -162,6 +168,7 @@ public sealed class ToolkitMod : MelonMod
         ChallengeRules = null;
         challengeHud = null;
         challengePreRun = null;
+        chainFrontier = null;
         consoleOverlay?.Dispose();
         consoleOverlay = null;
         commandInbox = null;
@@ -171,6 +178,7 @@ public sealed class ToolkitMod : MelonMod
 
     public override void OnGUI()
     {
+        chainFrontier?.Draw(consoleOverlay?.IsVisible ?? false);
         challengeHud?.Draw();
         challengePreRun?.Draw();
         consoleOverlay?.Draw();
@@ -192,6 +200,7 @@ public sealed class ToolkitMod : MelonMod
             }
         }
 
+        FrontierStartGuard.Update();
         catalogAdapter?.RefreshWhenReady();
 #if DEBUG
         ChallengeHudProbe.Update();

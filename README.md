@@ -10,7 +10,7 @@ Active MelonLoader toolkit with an in-game console, canonical command engine, en
 
 Install the versioned MelonLoader ZIP with the game closed, merging its `Mods/` and `UserLibs/` folders. All four Toolkit DLLs must come from the same release. See [installation and troubleshooting](docs/installation.md) and the [console command reference](docs/commands.md).
 
-Current release: **0.2.0**; see [changelog](CHANGELOG.md). Compatibility with [Tower Dominion Leak Fix](https://github.com/cparedes/tower-dominion-leak-fix) is intended; exhaustive coexistence testing is pending.
+Current release: **0.3.0**; see [changelog](CHANGELOG.md). Compatibility with [Tower Dominion Leak Fix](https://github.com/cparedes/tower-dominion-leak-fix) is intended; exhaustive coexistence testing is pending.
 
 ## Principles
 

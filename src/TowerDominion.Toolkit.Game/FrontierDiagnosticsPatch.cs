@@ -30,9 +30,11 @@ internal static class FrontierMenuInitializeProbe
 {
     private static void Postfix(ExpertModeMenu __instance)
     {
+        FrontierStartGuard.BeginRestore(__instance);
         FrontierDiagnostics.Report("initialized", __instance);
         if (ToolkitMod.SavedFrontiers is { SelectedIds.Count: > 0 })
             MelonCoroutines.Start(RestoreAfterInitialize(__instance));
+        else FrontierStartGuard.EndRestore(__instance);
     }
 
     private static IEnumerator RestoreAfterInitialize(ExpertModeMenu menu)
@@ -40,7 +42,7 @@ internal static class FrontierMenuInitializeProbe
         // Allow native setup to complete before raising any toggle event.
         yield return null;
         FrontierSelections? saved = ToolkitMod.SavedFrontiers;
-        if (saved is null || saved.SelectedIds.Count == 0) yield break;
+        if (saved is null || saved.SelectedIds.Count == 0) { FrontierStartGuard.EndRestore(menu); yield break; }
         int applied = 0;
         try
         {
@@ -60,13 +62,14 @@ internal static class FrontierMenuInitializeProbe
         {
             MelonLogger.Error($"[Toolkit Frontier] Restore failed after {applied} modifiers: {exception}");
         }
+        finally { FrontierStartGuard.EndRestore(menu); }
     }
 }
 
 [HarmonyPatch(typeof(ExpertModeMenu), nameof(ExpertModeMenu.Clear))]
 internal static class FrontierMenuClearProbe
 {
-    private static void Postfix(ExpertModeMenu __instance) => FrontierDiagnostics.Report("cleared", __instance);
+    private static void Postfix(ExpertModeMenu __instance) { FrontierStartGuard.Reset(__instance); FrontierDiagnostics.Report("cleared", __instance); }
 }
 
 [HarmonyPatch(typeof(ExpertModeMenu), "OnToggleChallengeUI")]
@@ -79,7 +82,7 @@ internal static class FrontierMenuToggleProbe
         FrontierDiagnostics.Report("before-toggle", __instance);
     }
 
-    private static void Postfix(ExpertModeMenu __instance) => FrontierDiagnostics.Report("after-toggle", __instance);
+    private static void Postfix(ExpertModeMenu __instance) { FrontierStartGuard.MarkScoreChanged(__instance); FrontierDiagnostics.Report("after-toggle", __instance); }
 }
 
 [HarmonyPatch(typeof(ChallengeUI), nameof(ChallengeUI.SetData))]

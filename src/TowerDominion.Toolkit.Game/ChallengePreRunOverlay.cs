@@ -37,7 +37,7 @@ internal sealed class ChallengePreRunOverlay
                 if (view != null)
                 {
                     var anchor = ChallengePreRunAnchors.CommanderNext(view);
-                    if (anchor != null && view.nextButton.alpha > 0.5f)
+                    if (anchor != null)
                         commander.Attach(anchor);
                 }
                 if (Time.unscaledTime >= nextDiagnostic)
@@ -58,8 +58,7 @@ internal sealed class ChallengePreRunOverlay
         }
         string description = ChallengeDisplay.Describe(registry, selections!.Selected);
         var commanderView = CommanderChallengeAnchorPatch.Current;
-        bool commanderActive = commanderView != null && commanderView.nextButton != null &&
-            commanderView.nextButton.gameObject.activeInHierarchy && commanderView.nextButton.alpha > 0.5f;
+        bool commanderActive = commanderView != null && ChallengePreRunAnchors.CommanderNext(commanderView) != null;
         var frontierMenu = FrontierChallengeAnchorPatch.Current;
         bool frontierActive = frontierMenu != null && frontierMenu.root != null &&
             frontierMenu.root.gameObject.activeInHierarchy;

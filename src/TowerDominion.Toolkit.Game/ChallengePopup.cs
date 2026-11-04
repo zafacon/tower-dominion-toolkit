@@ -93,6 +93,7 @@ internal sealed class ChallengePopup
         Root.SetActive(false);
     }
 
+    internal bool IsVisible => expanded && Root != null && Root.activeInHierarchy;
     internal void Toggle() { expanded = !expanded; Root.SetActive(expanded); }
     internal void Hide() { expanded = false; if (Root != null) Root.SetActive(false); }
     internal void Refresh(bool visible, string descriptions)

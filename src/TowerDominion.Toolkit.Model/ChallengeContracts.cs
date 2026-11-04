@@ -5,6 +5,8 @@ public enum ChallengeActionKind
 {
     PlaceTower,
     SellBuilding,
+    CancelBuilding,
+    UpgradeBuilding,
     Reroll
 }
 

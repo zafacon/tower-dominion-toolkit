@@ -74,6 +74,8 @@ internal sealed class ToolkitConsoleOverlay
             if (!char.IsControl(character) && character != '`' && !ctrl) Insert(character.ToString());
     }
 
+    internal bool IsVisible => visible;
+
     internal void Draw()
     {
         if (!visible) return;
@@ -85,12 +87,37 @@ internal sealed class ToolkitConsoleOverlay
         GUI.Box(new Rect(left, top, width, height), "Tower Dominion Toolkit");
         DrawBackground(new Rect(left + 9, top + 27, width - 18, height - 112), PanelColor);
         DrawBackground(new Rect(left + 9, top + height - 79, width - 18, 34), PanelColor);
-        int lines = Math.Max(1, Math.Min(VisibleLines, (int)((height - 115) / 19)));
-        int start = Math.Max(0, output.Count - lines - scroll);
-        int end = Math.Min(output.Count, start + lines);
         float outputWidth = tilePreview is { Count: > 0 } ? Math.Max(200, width * 0.42f) : width - 30;
-        for (int i = start; i < end; i++)
-            GUI.Label(new Rect(left + 15, top + 32 + (i - start) * 19, outputWidth, 20), output[i]);
+        float availableHeight = height - 120;
+        var labelStyle = GUI.skin.label;
+        bool previousWrap = labelStyle.wordWrap;
+        TextClipping previousClipping = labelStyle.clipping;
+        labelStyle.wordWrap = true;
+        labelStyle.clipping = TextClipping.Clip;
+        try
+        {
+            GUI.BeginGroup(new Rect(left + 15, top + 32, outputWidth, availableHeight));
+            try
+            {
+                float bottom = availableHeight;
+                int end = Math.Max(0, output.Count - scroll);
+                // Lay out from the bottom so wrapped entries occupy their actual height
+                // without overlapping adjacent entries or escaping the output panel.
+                for (int i = end - 1; i >= 0; i--)
+                {
+                    float rowHeight = Math.Max(19f, labelStyle.CalcHeight(new GUIContent(output[i]), outputWidth) + 2f);
+                    bottom -= rowHeight;
+                    GUI.Label(new Rect(0, bottom, outputWidth, rowHeight), output[i], labelStyle);
+                    if (bottom <= 0) break;
+                }
+            }
+            finally { GUI.EndGroup(); }
+        }
+        finally
+        {
+            labelStyle.wordWrap = previousWrap;
+            labelStyle.clipping = previousClipping;
+        }
         if (tilePreview is { Count: > 0 } preview)
         {
             float previewLeft = left + width * 0.43f;

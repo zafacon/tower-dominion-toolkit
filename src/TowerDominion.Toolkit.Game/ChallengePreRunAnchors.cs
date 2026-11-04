@@ -8,7 +8,8 @@ internal static class ChallengePreRunAnchors
 {
     internal static RectTransform? CommanderNext(CharacterSelectionView view)
     {
-        var button = view?.nextButton;
+        var button = view?.startButton;
+        if (button == null || !button.gameObject.activeInHierarchy) button = view?.nextButton;
         if (button == null || !button.gameObject.activeInHierarchy) return null;
         return button.GetComponent<RectTransform>();
     }

@@ -8,7 +8,7 @@ public sealed class BuildInfoTests
     public void VersionAndCommitAreEmbedded()
     {
         Assert.Equal("Tower Dominion Toolkit", ToolkitBuildInfo.Name);
-        Assert.Equal("0.2.0", ToolkitBuildInfo.Version);
+        Assert.Equal("0.3.0", ToolkitBuildInfo.Version);
         Assert.False(string.IsNullOrWhiteSpace(ToolkitBuildInfo.Commit));
     }
 }

@@ -29,17 +29,23 @@ internal sealed class GameCatalogAdapter : ICommandCatalogSource
             var resources = ManagedDataHandler.DataResources;
             if (resources?.SubDataObjects == null || resources.SubDataObjects.Count == 0) return;
 
+            // The native ban patch filters threat-level swarm candidates, not all enemy characters.
+            var regularWaveIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var finalWaveIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var data in resources.SubDataObjects)
             {
                 if (data?.TryCast<GeneralSettingsData>() is not { } settings) continue;
                 foreach (var threat in settings.ThreatLevels)
                 {
-                    if (threat == null || !threat.IsFinalWave) continue;
+                    if (threat == null) continue;
+                    var target = threat.IsFinalWave ? finalWaveIds : regularWaveIds;
                     foreach (var swarm in threat.EnemySwarms)
-                        if (swarm != null && !string.IsNullOrWhiteSpace(swarm.CharacterId)) finalWaveIds.Add(swarm.CharacterId);
+                        if (swarm != null && !string.IsNullOrWhiteSpace(swarm.CharacterId)) target.Add(swarm.CharacterId);
                 }
             }
+
+            var resolvedRegular = ResolveSwarmIds(regularWaveIds);
+            var resolvedFinal = ResolveSwarmIds(finalWaveIds);
 
             var groups = new Dictionary<string, Dictionary<string, CatalogEntity>>(StringComparer.OrdinalIgnoreCase);
             foreach (string category in new[] { "foes", "waves", "blueprints", "doctrines", "frontiers" })
@@ -63,10 +69,19 @@ internal sealed class GameCatalogAdapter : ICommandCatalogSource
                         if (character.Prefab.gameObject != null && !string.IsNullOrWhiteSpace(character.Prefab.gameObject.name)) aliases.Add(character.Prefab.gameObject.name);
                     }
                     if (character.CharacterIcon != null && !string.IsNullOrWhiteSpace(character.CharacterIcon.name)) aliases.Add(character.CharacterIcon.name);
-                    string? waveId = aliases.FirstOrDefault(finalWaveIds.Contains);
                     string name = Localize(character.CharacterNameLocString, character.UniqueID);
-                    if (waveId != null) Add(groups, "waves", waveId, name, aliases.ToArray());
-                    else if (character.IsEnemy) Add(groups, "foes", character.UniqueID, name, aliases.ToArray());
+                    // ResourceLoadEnemy is also used by SwarmBanPatch, so the catalog resolves
+                    // precisely the same short character IDs as native swarm selection.
+                    foreach (var (swarmId, selectedId) in resolvedRegular)
+                    {
+                        if (selectedId.Equals(character.UniqueID, StringComparison.OrdinalIgnoreCase))
+                            Add(groups, "foes", character.UniqueID, name, aliases.Append(swarmId).ToArray());
+                    }
+                    foreach (var (swarmId, selectedId) in resolvedFinal)
+                    {
+                        if (selectedId.Equals(character.UniqueID, StringComparison.OrdinalIgnoreCase))
+                            Add(groups, "waves", character.UniqueID, name, aliases.Append(swarmId).ToArray());
+                    }
                 }
                 else if (data.TryCast<BlueprintData>() is { } blueprint)
                 {
@@ -97,6 +112,26 @@ internal sealed class GameCatalogAdapter : ICommandCatalogSource
         {
             MelonLogger.Warning($"[Toolkit] Catalog load deferred: {exception.Message}");
         }
+    }
+
+    private static Dictionary<string, string> ResolveSwarmIds(IEnumerable<string> swarmIds)
+    {
+        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string id in swarmIds)
+        {
+            try
+            {
+                CharacterData? character = CharacterData.ResourceLoadEnemy(id);
+                if (character != null && !string.IsNullOrWhiteSpace(character.UniqueID))
+                    result[id] = character.UniqueID;
+                else MelonLogger.Warning($"[Toolkit Catalog] Unresolved swarm character: {id}");
+            }
+            catch (Exception exception)
+            {
+                MelonLogger.Warning($"[Toolkit Catalog] Cannot resolve swarm {id}: {exception.Message}");
+            }
+        }
+        return result;
     }
 
     private static string Localize(UnityEngine.Localization.LocalizedString? value, string fallback)
