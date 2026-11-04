@@ -2,11 +2,11 @@
 
 ## [Unreleased]
 
+## [0.3.0] — Expanded challenges and Frontier reliability
+
 - Restricted the `foes` catalog and ban completion to characters actually present in configured regular-wave swarms, excluding unused enemy assets.
 - Resolved short swarm IDs through game character resources, keeping canonical GUIDs for ban enforcement and separating final-wave candidates.
 - Verified in-game: 22 foe candidates, Tab completion and foe bans working.
-
-## [0.3.0] — Expanded challenges and Frontier reliability
 
 - Added **Chain of Command**: buildings must connect orthogonally to the HQ network; selling and cancelling are blocked and their buttons visibly disabled. Yellow crosses mark available network-adjacent tiles, regardless of other native building-placement limitations.
 - Added **8-Ball** (single reinforcement bundle), **Frozen Logistics** (recurring production caps with corrected displayed income), and **Left Turn Only** (restrict upgrades to the left path).
