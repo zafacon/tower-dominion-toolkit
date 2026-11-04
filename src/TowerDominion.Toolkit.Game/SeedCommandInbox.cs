@@ -8,9 +8,9 @@ internal sealed class SeedCommandInbox
 {
     private readonly string inboxPath;
     private readonly string responsePath;
-    private readonly CommandRegistry commands;
+    private readonly CanonicalCommandExecutor commands;
 
-    public SeedCommandInbox(string directory, CommandRegistry commands)
+    public SeedCommandInbox(string directory, CanonicalCommandExecutor commands)
     {
         ArgumentNullException.ThrowIfNull(commands);
         Directory.CreateDirectory(directory);

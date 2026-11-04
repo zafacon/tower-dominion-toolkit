@@ -124,18 +124,26 @@ public sealed class StartingTilePresets
         if (document.RootElement.TryGetProperty("relative", out var entries))
         {
             var saved = JsonSerializer.Deserialize<Dictionary<int, string[]>>(entries.GetRawText())!;
+            if (saved == null) throw new InvalidDataException("Invalid relative starting-tile preset.");
+            var validated = saved.ToDictionary(pair => pair.Key,
+                pair => RelativeStartingTiles.Parse(pair.Key, string.Join(",", pair.Value)).ToArray());
+            PersistRelative(validated);
             relative.Clear();
-            foreach (var pair in saved) relative[pair.Key] = RelativeStartingTiles.Parse(pair.Key, string.Join(",", pair.Value)).ToArray();
-            PersistRelative();
+            foreach (var pair in validated) relative[pair.Key] = pair.Value;
             return null;
         }
         return StartingTiles.ParseSet(string.Join(",", JsonSerializer.Deserialize<Dictionary<string, string>>(json)!.Values));
     }
-    private void PersistRelative()
+    private void PersistRelative(IReadOnlyDictionary<int, string[]> snapshot)
     {
         Directory.CreateDirectory(directory);
-        if (relative.Count == 0) { if (File.Exists(RelativePath)) File.Delete(RelativePath); }
-        else File.WriteAllText(RelativePath, JsonSerializer.Serialize(relative, Options));
+        string temporary = RelativePath + ".tmp";
+        try
+        {
+            File.WriteAllText(temporary, JsonSerializer.Serialize(snapshot, Options));
+            File.Move(temporary, RelativePath, true);
+        }
+        finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
     public IReadOnlyDictionary<int, string[]> PreviewSavedRelative(string name)
     {

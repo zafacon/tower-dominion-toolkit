@@ -1,5 +1,4 @@
 using MelonLoader;
-using TowerDominion.Toolkit.Model;
 using TowerDominion.Toolkit.Modules;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -14,11 +13,9 @@ internal sealed class ToolkitConsoleOverlay
     private static readonly Color PanelColor = new(0.045f, 0.055f, 0.075f, 0.98f);
     private static Texture2D? backdropTexture;
     private static Texture2D? panelTexture;
-    private readonly CommandRegistry commands;
-    private readonly EntityCatalog catalog;
-    private readonly StartingTilePresets? tilePresets;
+    private readonly CanonicalCommandExecutor executor;
+    private readonly ConsoleCommandAssistance? assistance;
     private IReadOnlyDictionary<int, string[]>? tilePreview;
-    private IReadOnlyDictionary<StartPosition, StartingTile>? legacyPreview;
     private readonly List<string> output = new();
     private readonly List<string> history = new();
     private string input = "";
@@ -32,11 +29,10 @@ internal sealed class ToolkitConsoleOverlay
     private EventSystem? suspended;
     private bool wasEnabled;
 
-    internal ToolkitConsoleOverlay(CommandRegistry commands, EntityCatalog catalog, StartingTilePresets? tilePresets = null)
+    internal ToolkitConsoleOverlay(CanonicalCommandExecutor executor, CommandGrammar grammar)
     {
-        this.commands = commands;
-        this.catalog = catalog;
-        this.tilePresets = tilePresets;
+        assistance = new ConsoleCommandAssistance(grammar);
+        this.executor = executor;
         Write("Tower Dominion Toolkit ready. Press ` to open; type help for commands.");
     }
 
@@ -92,7 +88,7 @@ internal sealed class ToolkitConsoleOverlay
         int lines = Math.Max(1, Math.Min(VisibleLines, (int)((height - 115) / 19)));
         int start = Math.Max(0, output.Count - lines - scroll);
         int end = Math.Min(output.Count, start + lines);
-        float outputWidth = tilePreview is { Count: > 0 } || legacyPreview != null ? Math.Max(200, width * 0.42f) : width - 30;
+        float outputWidth = tilePreview is { Count: > 0 } ? Math.Max(200, width * 0.42f) : width - 30;
         for (int i = start; i < end; i++)
             GUI.Label(new Rect(left + 15, top + 32 + (i - start) * 19, outputWidth, 20), output[i]);
         if (tilePreview is { Count: > 0 } preview)
@@ -105,8 +101,6 @@ internal sealed class ToolkitConsoleOverlay
                 if (pair.Key is >= 1 and <= 4)
                     StartingTileMosaic.Draw(new Rect(previewLeft + (pair.Key - 1) * each, top + 45, each - previewGap, each - previewGap + 26), pair.Key, pair.Value);
         }
-        if (legacyPreview != null)
-            StartingTileMosaic.DrawMap(new Rect(left + width * 0.53f, top + 45, width * 0.27f, width * 0.3f), legacyPreview, "Legacy tileset");
         GUI.Label(new Rect(left + 15, top + height - 72, width - 30, 24), "> " + input.Insert(Math.Clamp(cursor, 0, input.Length), "|"));
         GUI.Label(new Rect(left + 15, top + height - 46, width - 30, 22), "Enter execute | Tab complete | Up/Down history | Page Up/Down scroll | ` or Esc close");
     }
@@ -189,27 +183,15 @@ internal sealed class ToolkitConsoleOverlay
         scroll = 0;
         try
         {
-            string response = commands.Execute(command);
-            Write(response);
-            if (tilePresets != null && !response.StartsWith("Usage:", StringComparison.OrdinalIgnoreCase))
-            {
-                if (command.StartsWith("list starting-tile-preset ", StringComparison.OrdinalIgnoreCase))
-                {
-                    string name = command[26..].Trim();
-                    tilePreview = tilePresets.PreviewSavedRelative(name);
-                    legacyPreview = tilePreview.Count == 0 ? tilePresets.Read(name) : null;
-                }
-                else if (command.StartsWith("set starting tiles ", StringComparison.OrdinalIgnoreCase) ||
-                         command.StartsWith("clear starting tiles ", StringComparison.OrdinalIgnoreCase) ||
-                         command.Equals("list starting tiles", StringComparison.OrdinalIgnoreCase) ||
-                         command.Equals("list starting-tiles", StringComparison.OrdinalIgnoreCase) ||
-                         command.StartsWith("load starting tiles ", StringComparison.OrdinalIgnoreCase) ||
-                         command.StartsWith("activate tileset ", StringComparison.OrdinalIgnoreCase))
-                {
-                    tilePreview = tilePresets.Relative.ToDictionary(p => p.Key, p => p.Value);
-                    legacyPreview = tilePreview.Count == 0 ? tilePresets.Active : null;
-                }
-            }
+            bool help = assistance is not null && (command.Equals("help", StringComparison.OrdinalIgnoreCase)
+                || command.StartsWith("help ", StringComparison.OrdinalIgnoreCase));
+            CommandOutcome outcome = help
+                ? CommandOutcome.Ok(assistance!.Help(command.Length == 4 ? null : command[5..]))
+                : executor.ExecuteDetailed(command);
+            Write(outcome.Message);
+            if (outcome.Success && outcome.Details.Preview is { } preview)
+                ApplyPreview(preview);
+
         }
         catch (Exception exception)
         {
@@ -218,81 +200,35 @@ internal sealed class ToolkitConsoleOverlay
         }
     }
 
-    private void Complete()
+    private void ApplyPreview(CommandPreview preview)
     {
-        string trimmed = input.TrimStart();
-        string[] tokens = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        bool trailing = trimmed.EndsWith(' ');
-        int index = trailing ? tokens.Length : Math.Max(0, tokens.Length - 1);
-        string prefix = trailing || tokens.Length == 0 ? "" : tokens[^1];
-        IEnumerable<string> candidates;
-        if (index == 0) candidates = commands.Commands.Select(x => x.Name).Append("help");
-        else if (tokens[0].Equals("list", StringComparison.OrdinalIgnoreCase) && index == 1)
-            candidates = new[] { "foes", "waves", "blueprints", "doctrines", "frontiers", "selected-frontiers", "banned" };
-        else if ((tokens[0].Equals("ban", StringComparison.OrdinalIgnoreCase) || tokens[0].Equals("unban", StringComparison.OrdinalIgnoreCase)) && index == 1)
-            candidates = BanSelections.Categories;
-        else if ((tokens[0].Equals("ban", StringComparison.OrdinalIgnoreCase) || tokens[0].Equals("unban", StringComparison.OrdinalIgnoreCase)) && tokens.Length >= 2 && BanSelections.Categories.Contains(tokens[1], StringComparer.OrdinalIgnoreCase))
+        if (!preview.Kind.Equals("starting tiles", StringComparison.OrdinalIgnoreCase)) return;
+        if (!preview.Data.TryGetValue("relative", out object? relative)
+            || relative is not IReadOnlyDictionary<string, string[]> entries) return;
+        var mapped = new Dictionary<int, string[]>();
+        foreach (var entry in entries)
         {
-            int comma = input.LastIndexOf(',');
-            int offset = comma >= 0 ? comma + 1 : input.IndexOf(tokens[1], StringComparison.OrdinalIgnoreCase) + tokens[1].Length;
-            while (offset < input.Length && char.IsWhiteSpace(input[offset])) offset++;
-            string fragment = input[offset..].Trim().Trim('"');
-            string[] names = catalog.List(tokens[1]).Select(x => x.Name).Append("all")
-                .Where(x => x.Contains(fragment, StringComparison.OrdinalIgnoreCase)).OrderBy(x => x).ToArray();
-            CompleteEntityNames(names, offset, fragment, "No matching entries.");
-            return;
+            if (entry.Key.Length != 2 || entry.Key[0] != 'D'
+                || !int.TryParse(entry.Key[1..], out int difficulty) || difficulty is < 1 or > 4) return;
+            mapped[difficulty] = entry.Value.ToArray();
         }
-        else if ((tokens[0].Equals("select", StringComparison.OrdinalIgnoreCase) || tokens[0].Equals("unselect", StringComparison.OrdinalIgnoreCase)) && index == 1)
-            candidates = new[] { "frontier" };
-        else if ((tokens[0].Equals("select", StringComparison.OrdinalIgnoreCase) || tokens[0].Equals("unselect", StringComparison.OrdinalIgnoreCase)) && tokens.Length >= 2 && tokens[1].Equals("frontier", StringComparison.OrdinalIgnoreCase))
-        {
-            int comma = input.LastIndexOf(',');
-            int offset = comma >= 0 ? comma + 1 : input.IndexOf("frontier", StringComparison.OrdinalIgnoreCase) + "frontier".Length;
-            while (offset < input.Length && char.IsWhiteSpace(input[offset])) offset++;
-            string fragment = input[offset..].Trim().Trim('"');
-            string[] names = catalog.List("frontiers").Select(x => x.Name).Append("all")
-                .Where(x => x.Contains(fragment, StringComparison.OrdinalIgnoreCase)).OrderBy(x => x).ToArray();
-            CompleteEntityNames(names, offset, fragment, "No matching Frontiers.");
-            return;
-        }
-        else { Write("No completion available here."); return; }
-        string[] matches = candidates.Where(x => x.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)).OrderBy(x => x).ToArray();
-        if (matches.Length == 1)
-        {
-            List<string> result = tokens.ToList();
-            if (index < result.Count) result[index] = matches[0]; else result.Add(matches[0]);
-            input = string.Join(" ", result) + " ";
-            cursor = input.Length;
-        }
-        else Write(matches.Length == 0 ? "No matches." : "Matches: " + string.Join(", ", matches));
+        tilePreview = mapped;
     }
 
-    private void CompleteEntityNames(string[] names, int offset, string fragment, string emptyMessage)
+    private void Complete()
     {
-        if (names.Length == 0) { Write(emptyMessage); return; }
-        // Prefix matches take priority over incidental substring matches.
-        string[] leading = names.Where(x => x.StartsWith(fragment, StringComparison.OrdinalIgnoreCase)).ToArray();
-        if (leading.Length > 0) names = leading;
-        if (names.Length == 1)
+        if (assistance is null) { Write("Command completion unavailable."); return; }
+        CommandCompletionResult result = assistance.Complete(input, cursor);
+        if (result.Changed)
         {
-            input = input[..offset] + (names[0] == "all" ? "all" : "\"" + names[0] + "\"");
-            cursor = input.Length;
-            return;
+            input = result.Text;
+            cursor = result.Cursor;
         }
-        // Prefer the shared leading text, even when matching by substring.
-        string common = names[0];
-        foreach (string name in names.Skip(1))
+        else
         {
-            int i = 0;
-            while (i < common.Length && i < name.Length && char.ToUpperInvariant(common[i]) == char.ToUpperInvariant(name[i])) i++;
-            common = common[..i];
+            string message = result.Candidates.Count == 0 ? "No matches." : "Matches: " + string.Join(", ", result.Candidates);
+            if (output.Count == 0 || output[^1] != message) Write(message);
         }
-        if (common.Length > fragment.Length && common.StartsWith(fragment, StringComparison.OrdinalIgnoreCase))
-        {
-            input = input[..offset] + common;
-            cursor = input.Length;
-        }
-        else Write("Matches: " + string.Join(", ", names));
     }
 
     private void Insert(string value)

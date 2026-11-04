@@ -10,10 +10,12 @@
     <ProjectReference Include="../TowerDominion.Toolkit.Runtime/TowerDominion.Toolkit.Runtime.csproj" />
     <Reference Include="0Harmony"><HintPath>$(TowerDominionGamePath)/MelonLoader/net6/0Harmony.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="MelonLoader"><HintPath>$(TowerDominionGamePath)/MelonLoader/net6/MelonLoader.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Il2CppCopper.ViewManager.Code"><HintPath>$(TowerDominionGamePath)/MelonLoader/Il2CppAssemblies/Il2CppCopper.ViewManager.Code.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Assembly-CSharp"><HintPath>$(TowerDominionGamePath)/MelonLoader/Il2CppAssemblies/Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Il2CppInterop.Runtime"><HintPath>$(TowerDominionGamePath)/MelonLoader/net6/Il2CppInterop.Runtime.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Unity.Localization"><HintPath>$(TowerDominionGamePath)/MelonLoader/Il2CppAssemblies/Unity.Localization.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.CoreModule"><HintPath>$(TowerDominionGamePath)/MelonLoader/Il2CppAssemblies/UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.UIModule"><HintPath>$(TowerDominionGamePath)/MelonLoader/Il2CppAssemblies/UnityEngine.UIModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.IMGUIModule"><HintPath>$(TowerDominionGamePath)/MelonLoader/Il2CppAssemblies/UnityEngine.IMGUIModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.InputLegacyModule"><HintPath>$(TowerDominionGamePath)/MelonLoader/Il2CppAssemblies/UnityEngine.InputLegacyModule.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Unity.TextMeshPro"><HintPath>$(TowerDominionGamePath)/MelonLoader/Il2CppAssemblies/Unity.TextMeshPro.dll</HintPath><Private>false</Private></Reference>

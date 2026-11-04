@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.2.0] — Command engine and challenges
+
+- Replaced legacy command dispatch with a canonical, verb-first command grammar shared by execution, contextual help, and Tab completion. Commands now return structured results; some older command forms were removed. Run `help` to discover current syntax.
+- Added persistent challenge selections, run-locked active challenges, challenge presets, and the first challenge, **Cheapest Tower Only** (suggested by `@DiVerrencia`).
+- Added read-only challenge indicators and shared detail popups to Commander selection, Frontier selection, and the in-run HUD.
+- Added optional author attribution to challenge descriptions and `show challenges <id>`.
+- Restricted the F8 native HUD inspection probe to Debug builds; release packages exclude it.
+- Expanded game-independent automated coverage to 379 passing tests. Current challenge, commands, and challenge UI were verified in-game by the project maintainer.
+
+**Compatibility:** v0.2.0 uses the canonical command forms; consult `docs/commands.md` and in-game `help` when migrating from v0.1.x. Update all four Toolkit DLLs together.
+
 ## [0.1.1] — Preview and console improvements
 
 - Improved console readability with opaque background and panels.

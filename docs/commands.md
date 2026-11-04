@@ -1,38 +1,31 @@
-# Console commands
+# Console commands — v0.2.0
 
-Open the console with the backtick key (`\``). Run `help` for all available forms, `help <verb>` for a specific verb, or `help starting tiles`, `help banlists`, and `help frontier` for focused help.
+Open the console with backtick (`\``). Use `help`, `help <verb>`, `help <domain>`, or `help <verb> <domain>` for the live registered syntax. Tab completion uses the same command registry.
 
-## Inspection
+The canonical form is **`<verb> [qualifier] <domain> [arguments]`**. This replaces several v0.1.x domain-first commands. Names with spaces may be quoted; selection members are comma-separated; `all` selects the complete catalog.
 
-- `version`: compiled version, revision and feature registration.
-- `list foes`, `list waves`, `list blueprints`, `list doctrines`, `list frontiers`: game catalog.
-- `list banned` or `banned`: active bans.
-- `list selected-frontiers`: persistent Frontier selections.
+## Inspect and modify catalogs
 
-## Run settings
+- `list foes`, `list waves`, `list blueprints`, `list doctrines`
+- `list banned foes` (likewise waves, blueprints, doctrines)
+- `ban foes <names|all>` / `unban foes <names|all>` (likewise waves, blueprints, doctrines)
+- `list bans`, `clear bans`
+- `list frontiers`, `list selected frontiers`, `select frontiers <names|all>`, `unselect frontiers <names|all>`, `clear frontiers`
 
-- `seed set <value>`, `seed clear`, `seed status`: next-run seed override.
-- `ban <foes|waves|blueprints|doctrines> <names|all>` and `unban ...`: session-only bans.
-- `select frontier <name[,name...]|all>` and `unselect frontier ...`: persistent Frontier modifier selections. Comma-separated names may be quoted.
-- `frontier-diagnostics on|off|status`: diagnostic logging.
+## Challenges
 
-## Named banlists
+- `list challenges`, `list selected challenges`, `list active challenges`
+- `show challenges <id>`: name, author, ID, and description
+- `select challenges <ids|all>`, `unselect challenges <ids|all>`, `clear challenges`
+- Current challenge: `cheapest-tower-only` (Cheapest Tower Only, credited to `@DiVerrencia`). Selections persist; active challenges are locked for the current run.
+- Read-only indicators on Commander selection, Frontier selection, and the in-run HUD open challenge details. Selection is console-only.
 
-- `save banned as <name>`: snapshot active bans.
-- `list banlists` and `list banlist <name>`: inspect saved lists.
-- `load banlist <name>`: replace active bans.
-- `unload banlist <name>`: remove that list's entries from active bans.
-- `delete banlist <name>`: delete saved list.
+## Settings and presets
 
-## Starting tiles
+- `set seed <value>`, `clear seed`, `status seed`
+- `set starting tiles <shapes>`, `list starting tiles`, `inspect starting tiles`, `clear starting tiles [D1|D2|D3|D4]`. Shape count determines difficulty; relative orientations are used.
+- `set frontier diagnostics on|off`, `status frontier diagnostics`
+- `status toolkit`
+- For `frontiers`, `challenges`, `bans`, and `starting tiles`: `save <domain> as <name>`, `load <domain> <name>`, `list <domain> presets`, `inspect <domain> preset <name>`, `delete <domain> preset <name>`.
 
-- `set starting tiles S,X,L.C`: set **relative** entrance shapes for D3 (three shapes). One to four shapes select D1–D4 respectively.
-- `set relative tiles D3 S,X,L.C`: same configuration with an explicit difficulty.
-- Supported shapes: `S`, `X`, `L.C`, `L.A`, `T`, `T.C`, `T.A`.
-- `list starting tiles`, `list relative tiles`: show configurations.
-- `clear starting tiles 3` or `clear relative tiles D3`: remove a difficulty configuration.
-- `save starting tiles as <name>`, `load starting tiles <name>`, `unload starting tiles`: manage tile presets.
-- `list starting-tile-presets`, `list starting-tile-preset <name>`, `delete starting-tile-preset <name>`: inspect and delete presets.
-- `activate tileset <name>` and `deactivate tileset`: manage persistent activation of saved tilesets.
-
-Legacy absolute compass-coordinate tile presets remain accepted for backward compatibility but are not the primary syntax. Relative shapes are mapped to actual HQ entrances at run generation.
+Use the in-game `help` for argument validation, dynamically available catalogs, and additional registered operations. Old `seed set`, `select frontier`, `challenge ...`, `list banlists`, and `activate tileset` forms are not canonical in v0.2.0.

@@ -1,5 +1,4 @@
 using System.Text.Json;
-using TowerDominion.Toolkit.Model;
 
 namespace TowerDominion.Toolkit.Modules;
 
@@ -73,60 +72,5 @@ public sealed class BanSelections
         }
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
         return (changed, unique.Length - changed);
-    }
-}
-
-public sealed class BanCommands
-{
-    private readonly EntityCatalog catalog;
-    private readonly BanSelections selections;
-    private readonly Func<bool> ready;
-
-    public BanCommands(EntityCatalog catalog, BanSelections selections, Func<bool> ready)
-    {
-        this.catalog = catalog;
-        this.selections = selections;
-        this.ready = ready;
-    }
-
-    public string Execute(string command)
-    {
-        string[] parts = command.Trim().Split(' ', 3, StringSplitOptions.RemoveEmptyEntries);
-        bool add = parts[0].Equals("ban", StringComparison.OrdinalIgnoreCase);
-        string usage = $"Usage: {(add ? "ban" : "unban")} <foes|waves|blueprints|doctrines> <names|all>";
-        if (parts.Length != 3 || !BanSelections.Categories.Contains(parts[1], StringComparer.OrdinalIgnoreCase)) return usage;
-        if (!ready()) return "Game catalog is not ready yet.";
-        string category = parts[1];
-        string[] names = parts[2].Trim().Equals("all", StringComparison.OrdinalIgnoreCase)
-            ? catalog.List(category).Select(x => x.Id).ToArray()
-            : parts[2].Split(',').Select(x => x.Trim().Trim('"').Trim()).ToArray();
-        if (names.Length == 0 || names.Any(string.IsNullOrWhiteSpace)) return usage;
-        var ids = new List<string>();
-        foreach (string name in names)
-        {
-            if (!catalog.TryResolve(category, name, out CatalogEntity? entity))
-            {
-                var matches = catalog.List(category).Where(x => x.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ToArray();
-                if (matches.Length != 1)
-                    return matches.Length == 0 ? $"Unknown {category} entry: {name}. No bans changed."
-                        : $"Ambiguous {category} entry: {name}. Matches: {string.Join(", ", matches.Select(x => x.Name))}. No bans changed.";
-                entity = matches[0];
-            }
-            ids.Add(entity!.Id);
-        }
-        var result = selections.Change(category, ids, add);
-        return $"{(add ? "Banned" : "Unbanned")} {result.Changed} {category} entries; {result.Unchanged} unchanged.";
-    }
-
-    public string List(string command)
-    {
-        string[] parts = command.Trim().Split(' ', 3, StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length != 2 || !parts[1].Equals("banned", StringComparison.OrdinalIgnoreCase)) return "Usage: list banned";
-        var lines = BanSelections.Categories.SelectMany(category => selections.List(category).Select(id =>
-        {
-            string name = catalog.List(category).FirstOrDefault(x => x.Id.Equals(id, StringComparison.OrdinalIgnoreCase))?.Name ?? id;
-            return $"{category}: {name}";
-        })).ToArray();
-        return lines.Length == 0 ? "Banned entries: (none)" : "Banned entries:" + Environment.NewLine + string.Join(Environment.NewLine, lines);
     }
 }

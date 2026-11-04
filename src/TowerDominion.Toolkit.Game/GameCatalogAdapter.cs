@@ -5,11 +5,12 @@ using Il2CppNvizzio.Game.GamePlay.DataStructure.Doctrines;
 using Il2CppNvizzio.Game.GamePlay.DataStructure.Settings;
 using MelonLoader;
 using TowerDominion.Toolkit.Model;
+using TowerDominion.Toolkit.Modules;
 
 namespace TowerDominion.Toolkit.Game;
 
 /// <summary>Reads game-owned managed data into game-neutral catalog snapshots.</summary>
-internal sealed class GameCatalogAdapter
+internal sealed class GameCatalogAdapter : ICommandCatalogSource
 {
     private readonly EntityCatalog catalog;
     private bool ready;
@@ -17,6 +18,8 @@ internal sealed class GameCatalogAdapter
     public GameCatalogAdapter(EntityCatalog catalog) => this.catalog = catalog;
 
     public bool IsReady => ready;
+
+    public IReadOnlyList<CatalogEntity> List(string domain) => catalog.List(domain);
 
     public void RefreshWhenReady()
     {

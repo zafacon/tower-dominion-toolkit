@@ -4,53 +4,63 @@ namespace TowerDominion.Toolkit.Tests;
 
 public sealed class CommandHelpTests
 {
-    [Fact]
-    public void HelpTopicsExposeMultipleCommandForms()
+    private static CommandHelp Create()
     {
-        CommandRegistry registry = new();
-        registry.Register(new("set", "set old", "Old summary.", _ => "ok"));
-        registry.Register(new("clear", "clear old", "Old summary.", _ => "ok"));
-        registry.AddHelp("set", "set starting tiles <shapes>", "Relative coordinates.", "starting tiles");
-        registry.AddHelp("set", "set relative tiles D3 <shapes>", "Explicit difficulty.", "starting tiles");
-        registry.AddHelp("clear", "clear starting tiles 3", "Clear difficulty.", "starting tiles");
-
-        Assert.Contains("set starting tiles <shapes>", registry.Execute("help set"));
-        Assert.Contains("set relative tiles D3 <shapes>", registry.Execute("help starting tiles"));
-        Assert.Contains("clear starting tiles 3", registry.Execute("help starting tiles"));
-        registry.AddHelp("set", "set unrelated", "Other feature.", "unrelated");
-        Assert.DoesNotContain("set unrelated", registry.Execute("help starting tiles"));
-        Assert.DoesNotContain("set starting tiles", registry.Execute("help unrelated"));
-        Assert.Contains("Topics: starting tiles", registry.Execute("help"));
-        Assert.DoesNotContain("set old", registry.Execute("help set"));
+        var grammar = new CommandGrammar();
+        grammar.RegisterDomain(new("frontiers", "Modifiers"));
+        grammar.RegisterDomain(new("starting tiles", "Tiles"));
+        grammar.Register(new("list", "frontiers", "All", []));
+        grammar.Register(new("list", "frontiers", "Selected", [], Qualifier: "selected"));
+        grammar.Register(new("set", "starting tiles", "Shapes",
+            [new ArgumentDefinition("shapes", "Shapes", CommaSeparated: true)]));
+        grammar.RegisterPresets("frontiers", new(
+            _ => CommandOutcome.Ok("ok"), _ => CommandOutcome.Ok("ok"),
+            _ => CommandOutcome.Ok("ok"), _ => CommandOutcome.Ok("ok"),
+            _ => CommandOutcome.Ok("ok")));
+        return new CommandHelp(grammar);
     }
 
     [Fact]
-    public void HelpFallsBackForCommandsWithoutDetailedEntries()
+    public void OverviewIncludesEveryRegisteredOperation()
     {
-        CommandRegistry registry = new();
-        registry.Register(new("version", "version", "Show version.", _ => "ok"));
-        Assert.Contains("Show version.", registry.Execute("help version"));
-        Assert.Contains("Unknown command or help topic", registry.Execute("help missing"));
+        var help = Create().Query("help");
+        Assert.True(help.Success);
+        Assert.Equal(8, help.Syntax.Count);
+        Assert.Contains("starting tiles", help.Domains!);
+        Assert.Contains("save", help.Verbs!);
+    }
+
+    [Theory]
+    [InlineData("list", 3)]
+    [InlineData("frontiers", 7)]
+    [InlineData("list frontiers", 3)]
+    [InlineData("set starting tiles", 1)]
+    [InlineData("help set starting tiles", 1)]
+    public void BidirectionalQueriesIncludeOnlyMatchingOperations(string target, int count)
+    {
+        var help = Create().Query(target);
+        Assert.True(help.Success);
+        Assert.Equal(count, help.Operations.Count);
     }
 
     [Fact]
-    public void RelativeStartingTilesUseEntryCountAndClearAliases()
+    public void PresetAndQualifiedSyntaxComeFromDefinitions()
     {
-        string directory = Path.Combine(Path.GetTempPath(), "td-help-tiles-" + Guid.NewGuid());
-        try
-        {
-            StartingTilePresets presets = new(directory);
-            StartingTileCommands handler = new(presets);
-            Assert.Contains("D3 starting tiles saved", handler.Execute("set starting tiles S,X,L.C"));
-            Assert.Equal("S,X,L.C", string.Join(",", presets.Relative[3]));
-            Assert.Contains("cleared", handler.Execute("clear starting tiles 3"));
-            Assert.False(presets.Relative.ContainsKey(3));
-            Assert.Contains("D4 relative tiles saved", handler.Execute("set relative tiles D4 S,X,L.C,T.A"));
-            Assert.Contains("cleared", handler.Execute("clear relative tiles D4"));
-        }
-        finally
-        {
-            if (Directory.Exists(directory)) Directory.Delete(directory, true);
-        }
+        var help = Create().Query("frontiers");
+        Assert.Contains("list selected frontiers", help.Syntax);
+        Assert.Contains("save frontiers as <name>", help.Syntax);
+        Assert.Contains("list frontiers presets", help.Syntax);
+    }
+
+    [Theory]
+    [InlineData("list starting tiles")]
+    [InlineData("set frontiers")]
+    [InlineData("nonexistent")]
+    [InlineData("help set nonexistent")]
+    public void UnknownOrUnsupportedQueriesDoNotInventCommands(string target)
+    {
+        var help = Create().Query(target);
+        Assert.False(help.Success);
+        Assert.Empty(help.Operations);
     }
 }

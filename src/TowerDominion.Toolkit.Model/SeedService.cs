@@ -57,10 +57,19 @@ public sealed class SeedService : ISeedService
         awaitingVerification = null;
         Seed.Observe(generatedSeed);
 
-        if (pendingSeed is null || pendingOperation is null)
+        if (pendingSeed is null)
         {
             Seed.SetAuthority(PropertyAuthority.Game);
             return;
+        }
+
+        // The configured override persists across runs, as in the original Console.
+        // Each generation has its own operation/verification lifecycle.
+        ModelOperation operation = pendingOperation ?? new ModelOperation("game.run.seed.override");
+        if (pendingOperation is null)
+        {
+            operation.Accept();
+            Seed.Request(pendingSeed);
         }
 
         try
@@ -68,8 +77,8 @@ public sealed class SeedService : ISeedService
             string actualSeed = applyOverride(pendingSeed);
             Seed.ConfirmApplied(actualSeed);
             Seed.Observe(actualSeed);
-            pendingOperation.Apply();
-            awaitingVerification = pendingOperation;
+            operation.Apply();
+            awaitingVerification = operation;
 
             // An encoded seed may differ from its numeric input. The runtime's returned
             // encoded value is authoritative evidence of what was applied.
@@ -78,11 +87,11 @@ public sealed class SeedService : ISeedService
         }
         catch (Exception exception)
         {
-            pendingOperation.Fail(exception.Message);
+            operation.Fail(exception.Message);
         }
         finally
         {
-            pendingSeed = null;
+            // Clear the per-generation operation, not the configured seed.
             pendingOperation = null;
             Seed.SetAuthority(PropertyAuthority.Game);
         }

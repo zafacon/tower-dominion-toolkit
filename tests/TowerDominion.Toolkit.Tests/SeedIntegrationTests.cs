@@ -96,6 +96,40 @@ public sealed class SeedIntegrationTests
     }
 
     [Fact]
+    public void ConfiguredSeedPersistsAcrossRunsUntilExplicitlyCleared()
+    {
+        SeedService seeds = new();
+        SeedRuntimeBridge bridge = new(seeds);
+        ModelOperation first = seeds.RequestOverride("42");
+
+        Assert.Equal("encoded-42", bridge.OnSeedGenerated("random-1", value => "encoded-" + value));
+        bridge.ObserveEffectiveSeed("encoded-42");
+        Assert.Equal(OperationStatus.Verified, first.Result.Status);
+        Assert.Equal("42", seeds.PendingOverride);
+
+        Assert.Equal("encoded-42", bridge.OnSeedGenerated("random-2", value => "encoded-" + value));
+        bridge.ObserveEffectiveSeed("encoded-42");
+        Assert.True(seeds.Seed.Snapshot.IsVerified);
+        Assert.Equal("42", seeds.PendingOverride);
+
+        Assert.True(seeds.ClearOverride());
+        Assert.Null(seeds.PendingOverride);
+        Assert.Equal("random-3", bridge.OnSeedGenerated("random-3", _ => throw new InvalidOperationException()));
+    }
+
+    [Fact]
+    public void ReplacingPersistentSeedChangesSubsequentRuns()
+    {
+        SeedService seeds = new();
+        SeedRuntimeBridge bridge = new(seeds);
+        seeds.RequestOverride("first");
+        Assert.Equal("first", bridge.OnSeedGenerated("random", value => value));
+        seeds.RequestOverride("second");
+        Assert.Equal("second", bridge.OnSeedGenerated("random", value => value));
+        Assert.Equal("second", seeds.PendingOverride);
+    }
+
+    [Fact]
     public void LatestRequestSupersedesEarlierRequest()
     {
         SeedService seeds = new();
