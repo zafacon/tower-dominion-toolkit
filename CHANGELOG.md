@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.3.1] — Challenge restrictions and compatibility
+
+- Added **Low Tech** (`@cookiebat`): Tech is capped at zero, including initial grants and displayed gains; research, upgrades and doctrines remain available when otherwise affordable.
+- Added **Forced Deployment** (`@darksoulsgreat6205`): only the leftmost available blueprint may be placed, including duplicate cards; selling and cancelling are disabled.
+- Added automatic challenge-specific blueprint bans: Forced Deployment excludes Mission control; Cheapest Tower Only excludes Mission control and Scout Hideout. Manual bans remain independent.
+- Expanded shared Commander, Frontier and in-run challenge popups with combined restrictions, a wider layout, a fixed heading and scrolling descriptions.
+- Declared Cheapest Tower Only and Forced Deployment incompatible. Selection and preset replacement reject the combination without changing saved selections; `show challenges <id>` and the popup explain the incompatibility.
+- Extended game-independent challenge regression coverage; in-game confirmation was reported for Low Tech, Forced Deployment and the shared popup. Compatibility rejection still requires an in-game smoke test.
+
+
 ## [0.3.0] — Expanded challenges and Frontier reliability
 
 - Restricted the `foes` catalog and ban completion to characters actually present in configured regular-wave swarms, excluding unused enemy assets.

@@ -42,7 +42,7 @@ internal sealed class ChallengeHudOverlay
             UpdatePosition();
             if (nativeButton != null) nativeButton.gameObject.SetActive(true);
             popup?.Refresh(true, ChallengeDisplay.Describe(registry,
-                ChallengeDisplay.VisibleIds(selection!, inRun: true)));
+                ChallengeDisplay.VisibleIds(selection!, inRun: true), ToolkitMod.ChallengeCatalog));
         }
         catch (Il2CppInterop.Runtime.Il2CppException exception)
         {

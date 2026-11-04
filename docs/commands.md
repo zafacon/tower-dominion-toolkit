@@ -1,4 +1,4 @@
-# Console commands — v0.3.0
+# Console commands — v0.3.1
 
 Open the console with backtick (`\``). Use `help`, `help <verb>`, `help <domain>`, or `help <verb> <domain>` for the live registered syntax. Tab completion uses the same command registry.
 
@@ -17,10 +17,11 @@ The canonical form is **`<verb> [qualifier] <domain> [arguments]`**. This replac
 ## Challenges
 
 - `list challenges`, `list selected challenges`, `list active challenges`
-- `show challenges <id>`: name, author, ID, and description
+- `show challenges <id>`: name, author, ID, description, and known incompatibilities (incompatible selections and preset loads are rejected with an explanation)
 - `select challenges <ids|all>`, `unselect challenges <ids|all>`, `clear challenges`
-- Challenges: `cheapest-tower-only` (Cheapest Tower Only, `@DiVerrencia`), `chain-of-command` (Chain of Command, `@DiVerrencia`), `left-turn-only` (Left Turn Only, `@bigbossodin`), `eight-ball` (8-Ball, `@GameFamiliar`), and `frozen-logistics` (Frozen Logistics). Selections persist; active challenges are locked for the current run.
-- Read-only indicators on Commander selection, Frontier selection, and the in-run HUD open challenge details. Selection is console-only.
+- Challenges: `cheapest-tower-only` (Cheapest Tower Only, `@DiVerrencia`), `chain-of-command` (Chain of Command, `@DiVerrencia`), `left-turn-only` (Left Turn Only, `@bigbossodin`), `eight-ball` (8-Ball, `@GameFamiliar`), `frozen-logistics` (Frozen Logistics), `low-tech` (Low Tech, `@cookiebat`), and `forced-deployment` (Forced Deployment, `@darksoulsgreat6205`). Selections persist; active challenges are locked for the current run.
+- Cheapest Tower Only and Forced Deployment cannot be selected together. Incompatible selections, `select challenges all`, and incompatible preset loads fail atomically with an explanation. Use `show challenges <id>` to inspect known conflicts.
+- Read-only indicators on Commander selection, Frontier selection, and the in-run HUD open challenge details and known incompatibilities. Selection is console-only.
 
 ## Settings and presets
 

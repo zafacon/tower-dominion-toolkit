@@ -1,28 +1,30 @@
 # Release process
 
-The private repository is authoritative. The public Zafacon repository is a distribution mirror; do not mirror private history without an explicit decision on author metadata.
+The private `archlinux` repository is authoritative. The public Zafacon repository on `pcastaneda.edufile.local` has independent history; never push private history directly to GitHub. See `docs/pending-challenges-low-tech-forced-deployment.md` for workstation paths and release-asset branch details.
 
-## GitHub CI
+## Prepare and validate locally
 
-The public CI workflow runs tests for Model, Modules and Runtime through the test project. The game adapter cannot be built on a standard hosted runner because it requires the locally installed game and MelonLoader-generated IL2CPP reference assemblies. No game assemblies, MelonLoader binaries, or private credentials should be committed or uploaded as artifacts.
-
-CI has read-only repository permissions, no secrets and no release-publishing permission.
-
-## Local release dry run
-
-On a machine with Tower Dominion and MelonLoader installed:
+1. Update `Directory.Build.props`, `CHANGELOG.md`, `README.md`, command and installation docs, and release notes. Use a new version; do not reuse an existing tag.
+2. Review the full diff, untracked files, author metadata, credentials, game assets and licenses. Preserve local `research/` and `deployment-backups/`; do not include them in the public source or ZIP.
+3. With game references installed, run:
 
 ```bash
-dotnet test tests/TowerDominion.Toolkit.Tests/TowerDominion.Toolkit.Tests.csproj -c Release
-./scripts/package-game.sh "/path/to/Tower Dominion" ./dist
-unzip -l dist/tower-dominion-toolkit-v0.1.0-melonloader.zip
-(cd dist && sha256sum -c tower-dominion-toolkit-v0.1.0-melonloader.zip.sha256)
+dotnet test tests/TowerDominion.Toolkit.Tests/TowerDominion.Toolkit.Tests.csproj -c Release --nologo
+dotnet format whitespace tests/TowerDominion.Toolkit.Tests/TowerDominion.Toolkit.Tests.csproj --verify-no-changes --no-restore
+./scripts/package-game.sh '/path/to/Tower Dominion' ./dist
+unzip -l dist/tower-dominion-toolkit-vX.Y.Z-melonloader.zip
+(cd dist && sha256sum -c tower-dominion-toolkit-vX.Y.Z-melonloader.zip.sha256)
+git diff --check
 ```
 
-Verify the ZIP includes only four Toolkit DLLs, INSTALL.txt and SHA256SUMS. Confirm in-game behavior with the full set of four matching DLLs. Run coexistence checks with Tower Dominion Leak Fix before release approval.
+4. Verify the ZIP contains exactly four matching Toolkit DLLs, `INSTALL.txt`, and `SHA256SUMS`; verify the internal checksums. Never bundle game/MelonLoader assemblies.
+5. Deploy the four matching DLLs only while the game is closed, after backing up the installed copies. Confirm MelonLoader startup, command help/status, challenge selection and incompatibility errors, run-start restrictions, game restart persistence, and coexistence with Tower Dominion Leak Fix. Record any unverified tests honestly.
 
-## Publishing gate
+## Publish after explicit approval
 
-The approved public history strategy is a clean initial snapshot. Use Game Familiar <zafaconsolutions@gmail.com> for the initial public commit; preserve the original private repository history unchanged. Review author emails, paths, licenses, and source for private data. Verify that the authenticated GitHub account has repository creation rights in `zafacon`. Do not push the private repository's existing history by default.
+1. Commit and push reviewed private changes to the private remote. Prepare the public source snapshot separately on `pcastaneda.edufile.local` and review the diff before pushing it to `github.com:zafacon/tower-dominion-toolkit.git`.
+2. Place `vX.Y.Z/` release ZIP, ZIP `.sha256`, and `RELEASE_NOTES.md` on the public `release-assets` branch, then push that branch and public source. Public CI tests game-independent projects; it cannot build the game adapter without proprietary references.
+3. Push the **public** `vX.Y.Z` tag only after source and assets are available. The public `.github/workflows/release.yml` publishes matching release assets from `release-assets` on tag push. Do not assume the older v0.1.0 manual-release instructions apply.
+4. Verify CI, GitHub Actions release job, attached assets, checksums and release page. Keep existing tags and release history intact.
 
-After approval, prepare the public source, push to the organization, verify CI, and only then create the `v0.1.0` tag and GitHub release attaching the locally built ZIP and its `.sha256` file. GitHub Actions does not build or publish release binaries.
+Do not publish or tag while release gates are unresolved or without user approval.

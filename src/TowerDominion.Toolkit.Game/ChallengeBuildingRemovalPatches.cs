@@ -10,8 +10,10 @@ internal static class ChallengeBuildingRemovalGuard
     internal static bool Permit(ChallengeActionKind kind)
     {
         var selections = ToolkitMod.SavedChallenges;
-        if (selections?.RunActive != true ||
-            !selections.Active.Contains(ChainOfCommandRule.Id, StringComparer.OrdinalIgnoreCase)) return true;
+        if (selections?.RunActive != true) return true;
+        var restrictions = ChallengeRestrictions.For(selections.Active);
+        if ((kind == ChallengeActionKind.SellBuilding && !restrictions.NoSelling) ||
+            (kind == ChallengeActionKind.CancelBuilding && !restrictions.NoCancelling)) return true;
         return ToolkitMod.ChallengeRules?.Evaluate(new ChallengeAction(kind)).Allowed == true;
     }
 }

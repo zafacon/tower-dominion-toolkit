@@ -11,8 +11,8 @@
 1. Close Tower Dominion.
 2. Download the versioned MelonLoader ZIP from the Toolkit release.
 3. Extract the ZIP into the game's installation directory, merging its `Mods/` and `UserLibs/` folders. Do not copy the ZIP itself into `Mods/`.
-4. Start the game. The main menu should display the installed Toolkit version (for this release, `TK: 0.2.0`).
-5. Press backtick (`\``) to open the console; run `version` and `help`.
+4. Start the game. The main menu should display the installed Toolkit version (matching the installed release, e.g. `TK: 0.3.1`).
+5. Press backtick (`\``) to open the console; run `status toolkit` and `help`.
 
 **All four DLLs must be updated together.** The main mod is `Mods/TowerDominionToolkit.dll`; the dependencies are `UserLibs/TowerDominion.Toolkit.Model.dll`, `TowerDominion.Toolkit.Modules.dll`, and `TowerDominion.Toolkit.Runtime.dll`.
 

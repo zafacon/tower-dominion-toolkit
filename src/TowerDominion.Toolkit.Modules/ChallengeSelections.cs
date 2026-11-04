@@ -39,6 +39,7 @@ public sealed class ChallengeSelections
             if (enable) next.Add(id);
             else next.Remove(id);
         }
+        ValidateCompatibility(next);
         Save(next);
         selected.Clear();
         selected.UnionWith(next);
@@ -51,6 +52,7 @@ public sealed class ChallengeSelections
         string[] requested = ids.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         if (requested.Any(id => string.IsNullOrWhiteSpace(id) || !registry.TryGet(id, out _)))
             throw new ArgumentException("Unknown challenge identifier.", nameof(ids));
+        ValidateCompatibility(requested);
         Save(requested);
         selected.Clear();
         selected.UnionWith(requested);
@@ -66,10 +68,27 @@ public sealed class ChallengeSelections
     public void StartRun()
     {
         if (RunActive) throw new InvalidOperationException("A challenge run is already active.");
+        ValidateCompatibility(selected);
         active = Selected.ToArray();
     }
 
     public void EndRun() => active = null;
+
+    private void ValidateCompatibility(IEnumerable<string> ids)
+    {
+        var selectedIds = new HashSet<string>(ids, StringComparer.OrdinalIgnoreCase);
+        foreach (string id in selectedIds)
+        {
+            if (!registry.TryGet(id, out var rule) || rule == null) continue;
+            foreach (string otherId in rule.Descriptor.KnownIncompatibilities ?? Array.Empty<string>())
+            {
+                if (!selectedIds.Contains(otherId)) continue;
+                string otherName = registry.TryGet(otherId, out var other) && other != null
+                    ? other.Descriptor.Name : otherId;
+                throw new InvalidOperationException($"Cannot combine {rule.Descriptor.Name} with {otherName}: these challenges are incompatible. Unselect one first.");
+            }
+        }
+    }
 
     private void Save(IEnumerable<string> ids)
     {

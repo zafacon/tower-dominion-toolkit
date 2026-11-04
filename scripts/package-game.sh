@@ -37,7 +37,7 @@ Tower Dominion Toolkit — MelonLoader installation
 2. Close the game.
 3. Extract the Mods/ and UserLibs/ directories into the Tower Dominion game directory.
 4. Start the game and open the Toolkit console with the backtick key.
-5. Type help or version to verify the installation.
+5. Type help or status toolkit to verify the installation.
 
 Do not install alongside TowerDominionConsole.dll unless patch coexistence has been validated.
 The package contains Toolkit binaries only, not game or MelonLoader files.

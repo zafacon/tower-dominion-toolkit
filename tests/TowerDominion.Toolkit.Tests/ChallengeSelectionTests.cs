@@ -51,4 +51,28 @@ public sealed class ChallengeSelectionTests
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
     }
+    [Fact]
+    public void IncompatibleChallengesRejectSelectionAndReplacementWithoutMutation()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "challenge-incompat-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var registry = new ChallengeRegistry();
+            registry.Register(new CheapestTowerOnlyRule());
+            registry.Register(new ForcedDeploymentRule());
+            var path = Path.Combine(root, "selection.json");
+            var selections = new ChallengeSelections(path, registry);
+            selections.Change(new[] { CheapestTowerOnlyRule.Id }, true);
+            var error = Assert.Throws<InvalidOperationException>(() => selections.Change(new[] { ForcedDeploymentRule.Id }, true));
+            Assert.Contains("Forced Deployment", error.Message);
+            Assert.Contains("Cheapest Tower Only", error.Message);
+            Assert.Equal(new[] { CheapestTowerOnlyRule.Id }, selections.Selected);
+            Assert.Throws<InvalidOperationException>(() => selections.Replace(new[] { CheapestTowerOnlyRule.Id, ForcedDeploymentRule.Id }));
+            Assert.Equal(new[] { CheapestTowerOnlyRule.Id }, new ChallengeSelections(path, registry).Selected);
+            selections.Change(new[] { CheapestTowerOnlyRule.Id }, false);
+            selections.Change(new[] { ForcedDeploymentRule.Id }, true);
+            Assert.Equal(new[] { ForcedDeploymentRule.Id }, selections.Selected);
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
 }

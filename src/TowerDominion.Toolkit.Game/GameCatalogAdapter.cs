@@ -106,6 +106,17 @@ internal sealed class GameCatalogAdapter : ICommandCatalogSource
             foreach (var group in groups)
                 catalog.Replace(group.Key, group.Value.Values);
             ready = true;
+            foreach (string name in new[] { "Mission control", "Scout Hideout" })
+            {
+                if (catalog.TryResolve("blueprints", name, out var resolved) && resolved != null)
+                    MelonLogger.Msg($"[Toolkit Challenges] Blueprint target {name}: {resolved.Id}");
+                else
+                {
+                    MelonLogger.Warning($"[Toolkit Challenges] Blueprint target unresolved: {name}; challenge acquisition ban requires verification.");
+                    foreach (var candidate in catalog.List("blueprints").Where(x => x.Name.Contains("Mission", StringComparison.OrdinalIgnoreCase) || x.Name.Contains("Control", StringComparison.OrdinalIgnoreCase)))
+                        MelonLogger.Msg($"[Toolkit Challenges] Candidate blueprint: {candidate.Name} ({candidate.Id})");
+                }
+            }
             MelonLogger.Msg("[Toolkit] Catalog loaded: " + string.Join(", ", groups.Select(x => $"{x.Key}={x.Value.Count}")));
         }
         catch (Exception exception)

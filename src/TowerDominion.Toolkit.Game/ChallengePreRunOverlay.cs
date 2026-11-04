@@ -56,7 +56,7 @@ internal sealed class ChallengePreRunOverlay
             }
             catch (Exception ex) { MelonLogger.Warning($"[Toolkit Challenges] Pre-run indicator lookup: {ex.Message}"); }
         }
-        string description = ChallengeDisplay.Describe(registry, selections!.Selected);
+        string description = ChallengeDisplay.Describe(registry, selections!.Selected, ToolkitMod.ChallengeCatalog);
         var commanderView = CommanderChallengeAnchorPatch.Current;
         bool commanderActive = commanderView != null && ChallengePreRunAnchors.CommanderNext(commanderView) != null;
         var frontierMenu = FrontierChallengeAnchorPatch.Current;

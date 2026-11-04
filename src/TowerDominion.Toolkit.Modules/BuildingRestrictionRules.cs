@@ -7,7 +7,7 @@ public sealed class ChainOfCommandRule : IChallengeRule
 {
     public const string Id = "chain-of-command";
     public ChallengeDescriptor Descriptor { get; } = new(Id, "Chain of Command",
-        "Buildings must extend the HQ-connected network; building selling and cancellation are disabled.",
+        "Buildings must extend the HQ-connected network.",
         new HashSet<ChallengeActionKind> { ChallengeActionKind.SellBuilding, ChallengeActionKind.CancelBuilding },
         Author: "DiVerrencia");
 

@@ -16,14 +16,16 @@ public sealed record ChallengeDescriptor(
     string Name,
     string Description,
     IReadOnlySet<ChallengeActionKind> RestrictedActions,
-    string? Author = null);
+    string? Author = null,
+    IReadOnlyList<string>? KnownIncompatibilities = null);
 
 /// <summary>Snapshot of a proposed player action, supplied by a game adapter.</summary>
 public sealed record ChallengeAction(
     ChallengeActionKind Kind,
     string? EntityId = null,
     decimal? EffectiveCost = null,
-    IReadOnlyDictionary<string, decimal>? AvailableTowerCosts = null);
+    IReadOnlyDictionary<string, decimal>? AvailableTowerCosts = null,
+    string? LeftmostBlueprintId = null);
 
 /// <summary>Decision returned without changing game state.</summary>
 public sealed record ChallengeDecision(bool Allowed, string? Reason = null)

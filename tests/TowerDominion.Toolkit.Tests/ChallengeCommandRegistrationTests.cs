@@ -63,4 +63,30 @@ public sealed class ChallengeCommandRegistrationTests
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
     }
+    [Fact]
+    public void IncompatibleSelectionAllIsAtomicAndShowExplainsConflict()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "td-challenge-conflict-" + Guid.NewGuid());
+        try
+        {
+            var registry = new ChallengeRegistry();
+            registry.Register(new CheapestTowerOnlyRule());
+            registry.Register(new ForcedDeploymentRule());
+            var selections = new ChallengeSelections(Path.Combine(root, "selected.json"), registry);
+            var grammar = new CommandGrammar();
+            ChallengeCommandRegistration.Register(grammar, registry, selections);
+            var parser = new CommandTextParser(grammar);
+            Assert.True(parser.Execute("select challenges cheapest-tower-only").Success);
+            var rejected = parser.Execute("select challenges all");
+            Assert.False(rejected.Success);
+            Assert.Contains("Forced Deployment", rejected.Message);
+            Assert.Contains("Cheapest Tower Only", rejected.Message);
+            Assert.Equal(new[] { CheapestTowerOnlyRule.Id }, selections.Selected);
+            Assert.Equal(new[] { CheapestTowerOnlyRule.Id }, new ChallengeSelections(Path.Combine(root, "selected.json"), registry).Selected);
+            Assert.Contains("Forced Deployment", parser.Execute("show challenges cheapest-tower-only").Message);
+            Assert.Contains("Cheapest Tower Only", parser.Execute("show challenges forced-deployment").Message);
+            Assert.Contains("Incompatible with: Forced Deployment", ChallengeDisplay.Describe(registry, selections.Selected));
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
 }

@@ -27,7 +27,11 @@ public static class ChallengeCommandRegistration
                 if (!registry.TryGet(id, out var rule) || rule == null)
                     return CommandOutcome.Failure($"Unknown challenge: {id}", CommandErrorKind.Validation);
                 var d = rule.Descriptor;
-                return CommandOutcome.Ok($"{d.Name}\nID: {d.Id}\nAuthor: {d.Author ?? "Unattributed"}\n{d.Description}");
+                string incompatibilities = d.KnownIncompatibilities is { Count: > 0 }
+                    ? string.Join(", ", d.KnownIncompatibilities.Select(otherId =>
+                        registry.TryGet(otherId, out var other) && other != null ? other.Descriptor.Name : otherId))
+                    : "None known";
+                return CommandOutcome.Ok($"{d.Name}\nID: {d.Id}\nAuthor: {d.Author ?? "Unattributed"}\n{d.Description}\nKnown incompatibilities: {incompatibilities}");
             }));
         grammar.Register(new("clear", "challenges", "Clear selected challenges", Array.Empty<ArgumentDefinition>(),
             Handler: _ => Execute(selections, () => selections.Clear(), "Challenges cleared.")));

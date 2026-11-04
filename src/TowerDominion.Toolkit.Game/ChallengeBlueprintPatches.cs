@@ -13,23 +13,30 @@ internal static class ChallengeBlueprintAdapter
     {
         ChallengeEnforcement? enforcement = ToolkitMod.ChallengeRules;
         ChallengeSelections? selections = ToolkitMod.SavedChallenges;
-        if (enforcement == null || selections?.RunActive != true ||
-            !selections.Active.Contains(CheapestTowerOnlyRule.Id, StringComparer.OrdinalIgnoreCase)) return true;
+        if (enforcement == null || selections?.RunActive != true) return true;
+        bool cheapest = selections.Active.Contains(CheapestTowerOnlyRule.Id, StringComparer.OrdinalIgnoreCase);
+        bool forced = selections.Active.Contains(ForcedDeploymentRule.Id, StringComparer.OrdinalIgnoreCase);
+        if (!cheapest && !forced) return true;
 
         try
         {
             var blueprints = hand.Blueprints;
             if (blueprints == null || candidate?.Data == null) return false;
             var costs = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+            var order = new List<(int InstanceId, float ScreenX, int Count)>();
             foreach (var pair in blueprints)
             {
                 if (pair.Key == null || pair.Value == null || pair.Value.Count <= 0) continue;
                 string id = pair.Key.UniqueID;
                 if (string.IsNullOrWhiteSpace(id)) continue;
                 costs[id] = pair.Value.Cost;
+                if (forced)
+                    order.Add((pair.Value.GetInstanceID(), pair.Value.transform.position.x, pair.Value.Count));
             }
             string candidateId = candidate.Data.UniqueID;
-            return enforcement.Evaluate(new ChallengeAction(
+            if (forced && ForcedDeploymentOrder.LeftmostInstance(order) != candidate.GetInstanceID())
+                return false;
+            return !cheapest || enforcement.Evaluate(new ChallengeAction(
                 ChallengeActionKind.PlaceTower, candidateId, candidate.Cost, costs)).Allowed;
         }
         catch (Exception exception)

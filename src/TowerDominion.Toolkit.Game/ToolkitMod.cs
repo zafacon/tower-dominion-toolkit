@@ -17,6 +17,7 @@ public sealed class ToolkitMod : MelonMod
     internal static FrontierSelections? SavedFrontiers { get; private set; }
 
     internal static BanSelections? SavedBans { get; private set; }
+    internal static EntityCatalog? ChallengeCatalog { get; private set; }
 
     internal static StartingTilePresets? StartingTileSets { get; private set; }
 
@@ -80,6 +81,7 @@ public sealed class ToolkitMod : MelonMod
         SeedBridge = new SeedRuntimeBridge(seedService);
         Seeds = seedModule;
         EntityCatalog catalog = new();
+        ChallengeCatalog = catalog;
         catalogAdapter = new GameCatalogAdapter(catalog);
         try
         {
@@ -105,6 +107,8 @@ public sealed class ToolkitMod : MelonMod
         {
             challengeRegistry = new ChallengeRegistry();
             challengeRegistry.Register(new CheapestTowerOnlyRule());
+            challengeRegistry.Register(new LowTechRule());
+            challengeRegistry.Register(new ForcedDeploymentRule());
             challengeRegistry.Register(new ChainOfCommandRule());
             challengeRegistry.Register(new LeftTurnOnlyRule());
             challengeRegistry.Register(new EightBallRule());
@@ -162,6 +166,7 @@ public sealed class ToolkitMod : MelonMod
         Seeds = null;
         SavedFrontiers = null;
         SavedBans = null;
+        ChallengeCatalog = null;
         StartingTileSets = null;
         SavedChallenges?.EndRun();
         SavedChallenges = null;
