@@ -4,7 +4,7 @@ namespace TowerDominion.Toolkit.Modules;
 public static class CatalogQueryRegistration
 {
     public static void Register(CommandGrammar grammar, CommandCatalogService catalog,
-        BanSelections bans, FrontierSelections frontiers)
+        BanSelections bans, FrontierSelections frontiers, PinSelections? pins = null)
     {
         ArgumentNullException.ThrowIfNull(grammar);
         ArgumentNullException.ThrowIfNull(catalog);
@@ -17,6 +17,20 @@ public static class CatalogQueryRegistration
                 Handler: _ => ListCatalog(catalog, current)));
             grammar.Register(new("list", current, $"List banned {current}", Array.Empty<ArgumentDefinition>(),
                 Qualifier: "banned", Handler: _ => ListBanned(catalog, bans, current)));
+        }
+        if (pins is not null)
+        {
+            foreach (string domain in PinSelections.Categories)
+            {
+                string current = domain;
+                grammar.Register(new("list", current, $"List pinned {current}", Array.Empty<ArgumentDefinition>(),
+                    Qualifier: "pinned", Handler: _ => ListPinned(catalog, pins, current)));
+            }
+            grammar.RegisterDomain(new("pins", "All current pins"));
+            grammar.Register(new("clear", "pins", "Clear all active pins without deleting presets",
+                Array.Empty<ArgumentDefinition>(), Handler: _ => ClearPins(pins)));
+            grammar.Register(new("list", "pins", "List all pinned encounters", Array.Empty<ArgumentDefinition>(),
+                Handler: _ => ListAllPins(catalog, pins)));
         }
         grammar.Register(new("list", "frontiers", "List Frontier modifiers", Array.Empty<ArgumentDefinition>(),
             Handler: _ => ListCatalog(catalog, "frontiers")));
@@ -39,6 +53,19 @@ public static class CatalogQueryRegistration
             Data: new Dictionary<string, object?> { ["cleared"] = before.Length },
             Changes: before.Length == 0 ? Array.Empty<CommandStateChange>() :
                 new[] { new CommandStateChange("frontiers", "selected", before, Array.Empty<string>()) }));
+    }
+
+    private static CommandOutcome ClearPins(PinSelections pins)
+    {
+        var before = PinSelections.Categories.ToDictionary(domain => domain,
+            domain => pins.List(domain).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray());
+        pins.Replace(new Dictionary<string, string[]>());
+        var changes = before.Where(entry => entry.Value.Length > 0)
+            .Select(entry => new CommandStateChange(entry.Key, "pinned", entry.Value, Array.Empty<string>()))
+            .ToArray();
+        return CommandOutcome.Ok("Pins cleared.", new CommandResultDetails(
+            Data: new Dictionary<string, object?> { ["cleared"] = before.Sum(entry => entry.Value.Length) },
+            Changes: changes));
     }
 
     private static CommandOutcome ClearBans(BanSelections bans)
@@ -69,12 +96,33 @@ public static class CatalogQueryRegistration
         return CommandOutcome.Ok($"Banned {domain}: " + string.Join(", ", names));
     }
 
+    private static CommandOutcome ListPinned(CommandCatalogService catalog, PinSelections pins, string domain)
+    {
+        var entries = catalog.List(domain);
+        if (entries is null) return CommandOutcome.Failure($"Catalog unavailable for {domain}.", CommandErrorKind.Unavailable);
+        return CommandOutcome.Ok($"Pinned {domain}: " + string.Join(", ", pins.List(domain)
+            .Select(id => entries.FirstOrDefault(x => x.Id.Equals(id, StringComparison.OrdinalIgnoreCase))?.Name ?? id)));
+    }
+
     private static CommandOutcome ListSelected(CommandCatalogService catalog, FrontierSelections frontiers)
     {
         var entries = catalog.List("frontiers");
         if (entries is null) return CommandOutcome.Failure("Catalog unavailable for frontiers.", CommandErrorKind.Unavailable);
         var names = frontiers.SelectedIds.Select(id => entries.FirstOrDefault(x => x.Id.Equals(id, StringComparison.OrdinalIgnoreCase))?.Name ?? id);
         return CommandOutcome.Ok("Selected frontiers: " + string.Join(", ", names));
+    }
+
+    private static CommandOutcome ListAllPins(CommandCatalogService catalog, PinSelections pins)
+    {
+        var lines = new List<string>();
+        foreach (string domain in PinSelections.Categories)
+        {
+            var entries = catalog.List(domain);
+            var names = pins.List(domain).Select(id =>
+                entries?.FirstOrDefault(x => x.Id.Equals(id, StringComparison.OrdinalIgnoreCase))?.Name ?? id);
+            lines.Add(domain + ": " + string.Join(", ", names));
+        }
+        return CommandOutcome.Ok("Pins: " + string.Join("; ", lines));
     }
 
     private static CommandOutcome ListAllBans(CommandCatalogService catalog, BanSelections bans)

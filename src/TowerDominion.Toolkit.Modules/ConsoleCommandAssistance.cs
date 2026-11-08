@@ -28,6 +28,7 @@ public sealed class ConsoleCommandAssistance
         var result = help.Query(target);
         if (!result.Success) return result.Title;
         return "Canonical command reference:" + Environment.NewLine
-            + string.Join(Environment.NewLine, result.Syntax.Distinct(StringComparer.OrdinalIgnoreCase));
+            + string.Join(Environment.NewLine, result.Operations.Select(operation => operation.Syntax + " — " + operation.Description)
+                .Distinct(StringComparer.OrdinalIgnoreCase));
     }
 }

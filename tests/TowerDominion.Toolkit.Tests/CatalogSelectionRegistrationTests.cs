@@ -91,7 +91,9 @@ public sealed class CatalogSelectionRegistrationTests
     public void AllOperationsAreRegisteredForExpectedDomains()
     {
         var (grammar, _, _, _) = Create();
-        Assert.Equal(10, grammar.Operations.Count);
+        Assert.Equal(14, grammar.Operations.Count);
+        Assert.True(grammar.Supports("pin", "foes"));
+        Assert.True(grammar.Supports("unpin", "waves"));
         Assert.True(grammar.Supports("ban", "waves"));
         Assert.True(grammar.Supports("unban", "doctrines"));
         Assert.True(grammar.Supports("select", "frontiers"));

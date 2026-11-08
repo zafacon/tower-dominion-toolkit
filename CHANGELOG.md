@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.3.2] — Native encounter pinning
+
+- Added session-only `pin` and `unpin` for regular-wave foes and final-wave encounters, with named persistent pin presets. Pins request native choice inclusion without increasing slots or bypassing encounter eligibility.
+- Added readable `list pins` / `list pinned` output and atomic ban/pin conflict validation, including preset loading.
+- Verified native regular-wave pins for Medacris and Bryta, and final-wave pins for Powerful Host and Breeding Grounds on Difficulty 2; Breeding Grounds is excluded on Difficulty 1.
+- Expanded automated tests to 419 passing cases.
+
 ## [0.3.1] — Challenge restrictions and compatibility
 
 - Added **Low Tech** (`@cookiebat`): Tech is capped at zero, including initial grants and displayed gains; research, upgrades and doctrines remain available when otherwise affordable.

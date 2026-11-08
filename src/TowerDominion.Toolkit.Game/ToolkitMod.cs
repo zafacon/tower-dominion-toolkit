@@ -17,6 +17,7 @@ public sealed class ToolkitMod : MelonMod
     internal static FrontierSelections? SavedFrontiers { get; private set; }
 
     internal static BanSelections? SavedBans { get; private set; }
+    internal static PinSelections? SavedPins { get; private set; }
     internal static EntityCatalog? ChallengeCatalog { get; private set; }
 
     internal static StartingTilePresets? StartingTileSets { get; private set; }
@@ -97,6 +98,7 @@ public sealed class ToolkitMod : MelonMod
             SavedBans = new BanSelections(Path.Combine(toolkitDirectory, "bans.json"), persist: false);
         }
         catch (Exception exception) { MelonLogger.Error($"[Toolkit] Ban configuration failed: {exception}"); }
+        SavedPins = new PinSelections();
         try
         {
             StartingTileSets = new StartingTilePresets(Path.Combine(toolkitDirectory, "StartingTiles"));
@@ -132,7 +134,7 @@ public sealed class ToolkitMod : MelonMod
         {
             try
             {
-                canonicalGrammar = GameCommandComposition.Create(catalogAdapter, SavedBans,
+                canonicalGrammar = GameCommandComposition.Create(catalogAdapter, SavedBans, SavedPins!,
                     SavedFrontiers, challengeRegistry, SavedChallenges, StartingTileSets,
                     seedService, () => $"Toolkit {ToolkitBuildInfo.Version}; seed module active.",
                     Path.Combine(toolkitDirectory, "Presets"));
@@ -166,6 +168,7 @@ public sealed class ToolkitMod : MelonMod
         Seeds = null;
         SavedFrontiers = null;
         SavedBans = null;
+        SavedPins = null;
         ChallengeCatalog = null;
         StartingTileSets = null;
         SavedChallenges?.EndRun();

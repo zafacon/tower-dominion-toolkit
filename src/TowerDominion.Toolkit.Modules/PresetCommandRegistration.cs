@@ -14,6 +14,10 @@ public static class PresetCommandRegistration
             name => selections.Load("bans", name), () => selections.Names("bans"),
             name => selections.Inspect("bans", name), name => selections.Delete("bans", name),
             () => selections.SnapshotBans().ToDictionary(x => x.Key, x => x.Value));
+        RegisterDomain(grammar, "pins", name => selections.Save("pins", name),
+            name => selections.Load("pins", name), () => selections.Names("pins"),
+            name => selections.Inspect("pins", name), name => selections.Delete("pins", name),
+            () => selections.SnapshotPins().ToDictionary(x => x.Key, x => x.Value));
         RegisterDomain(grammar, "frontiers", name => selections.Save("frontiers", name),
             name => selections.Load("frontiers", name), () => selections.Names("frontiers"),
             name => selections.Inspect("frontiers", name), name => selections.Delete("frontiers", name),
@@ -54,8 +58,8 @@ public static class PresetCommandRegistration
             load(name);
             var after = snapshot();
             var changes = before.Keys.Union(after.Keys, StringComparer.OrdinalIgnoreCase)
-                .Select(key => new CommandStateChange(domain == "bans" ? key : domain,
-                    domain == "bans" ? "banned" : domain == "starting tiles" ? "configuration" : "selected",
+                .Select(key => new CommandStateChange(domain is "bans" or "pins" ? key : domain,
+                    domain == "bans" ? "banned" : domain == "pins" ? "pinned" : domain == "starting tiles" ? "configuration" : "selected",
                     before.TryGetValue(key, out var previous) ? previous : Array.Empty<string>(),
                     after.TryGetValue(key, out var current) ? current : Array.Empty<string>()))
                 .Where(change => !((string[])change.Before!).SequenceEqual((string[])change.After!,

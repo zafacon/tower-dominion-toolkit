@@ -77,7 +77,7 @@ public sealed class CatalogQueryRegistrationTests
     public void AllReadOnlyAndResetCommandsHaveRegistryHelp()
     {
         var (grammar, _, _, _) = Create();
-        Assert.Equal(23, grammar.Operations.Count);
+        Assert.Equal(27, grammar.Operations.Count);
         foreach (string command in new[] { "list foes", "list banned waves", "list frontiers", "list selected frontiers", "list bans", "clear bans", "clear frontiers" })
         {
             var parsed = new CommandTextParser(grammar).Parse(command);

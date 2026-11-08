@@ -29,6 +29,15 @@ The canonical form is **`<verb> [qualifier] <domain> [arguments]`**. This replac
 - `set starting tiles <shapes>`, `list starting tiles`, `inspect starting tiles`, `clear starting tiles [D1|D2|D3|D4]`. Shape count determines difficulty; relative orientations are used.
 - `set frontier diagnostics on|off`, `status frontier diagnostics`
 - `status toolkit`
-- For `frontiers`, `challenges`, `bans`, and `starting tiles`: `save <domain> as <name>`, `load <domain> <name>`, `list <domain> presets`, `inspect <domain> preset <name>`, `delete <domain> preset <name>`.
+- For `frontiers`, `challenges`, `bans`, `pins`, and `starting tiles`: `save <domain> as <name>`, `load <domain> <name>`, `list <domain> presets`, `inspect <domain> preset <name>`, `delete <domain> preset <name>`.
 
 Use the in-game `help` for argument validation, dynamically available catalogs, and additional registered operations. Old `seed set`, `select frontier`, `challenge ...`, `list banlists`, and `activate tileset` forms are not canonical in v0.3.0.
+
+### Encounter pins
+
+- `pin foes <names|all>` / `unpin foes <names|all>`; similarly `pin waves` / `unpin waves`.
+- `list pinned foes`, `list pinned waves`, `list pins`, `clear pins` (clears active pins in both categories without deleting presets).
+- Pins are session-only, and can be explicitly saved with `save pins as <name>`, restored with `load pins <name>`, listed with `list pins presets`, inspected with `inspect pins preset <name>`, and removed with `delete pins preset <name>`.
+- Foe pins use the same regular-wave encounter catalog and native eligibility rules as bans; there is no separate tier restriction. Final-wave pins use the same final-wave catalog as bans and respect native availability. Pins have been live-tested with Medacris and Bryta in separate runs, Powerful Host in a final-wave selection, and Breeding Grounds on Difficulty 2 (excluded on Difficulty 1); inclusion remains subject to native eligibility, available nonmandatory choice slots, and duplicate restrictions.
+- Ban and pin commands reject direct conflicts; loading conflicting presets is rejected without replacing the current configuration.
+- Existing foe bans apply to the regular-wave foe catalog; final-wave bans use the separate wave catalog. Native availability and choice-slot constraints also apply to pins.

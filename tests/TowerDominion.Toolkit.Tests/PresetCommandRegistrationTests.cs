@@ -30,7 +30,7 @@ public sealed class PresetCommandRegistrationTests
                 new SelectionPresetAdapters(Path.Combine(root, "presets"), bans, frontiers),
                 new ChallengePresetAdapter(Path.Combine(root, "challenge-presets"), registry, challenges),
                 new StartingTilePresetAdapter(tiles));
-            Assert.Equal(20, grammar.Operations.Count);
+            Assert.Equal(25, grammar.Operations.Count);
             var parser = new CommandTextParser(grammar);
             bans.Change("foes", ["foe"], true);
             frontiers.Change(["frontier"], true);
