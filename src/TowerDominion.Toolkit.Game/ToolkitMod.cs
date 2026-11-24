@@ -2,6 +2,7 @@ using MelonLoader;
 using TowerDominion.Toolkit.Model;
 using TowerDominion.Toolkit.Modules;
 using TowerDominion.Toolkit.Runtime;
+using TowerDominion.Toolkit.Rng;
 
 [assembly: MelonInfo(typeof(TowerDominion.Toolkit.Game.ToolkitMod), "Tower Dominion Toolkit", ToolkitBuildInfo.Version, "Game Familiar")]
 [assembly: MelonGame("Parallel45", "tower-dominion")]
@@ -11,6 +12,9 @@ namespace TowerDominion.Toolkit.Game;
 public sealed class ToolkitMod : MelonMod
 {
     internal static SeedRuntimeBridge? SeedBridge { get; private set; }
+
+    internal static CorrectiveRngLifecycle? CorrectiveRng { get; private set; }
+
 
     internal static SeedModule? Seeds { get; private set; }
 
@@ -25,6 +29,7 @@ public sealed class ToolkitMod : MelonMod
     internal static ChallengeSelections? SavedChallenges { get; private set; }
 
     internal static ChallengeEnforcement? ChallengeRules { get; private set; }
+    internal static GameplayRules? SavedGameplayRules { get; private set; }
 
     private SeedCommandInbox? commandInbox;
     private ToolkitConsoleOverlay? consoleOverlay;
@@ -61,9 +66,13 @@ public sealed class ToolkitMod : MelonMod
             return;
         }
 
+        CorrectiveRng = new CorrectiveRngLifecycle(
+            new CorrectiveRngSession(new Xoshiro256StarStarFactory(), new Fnv1aKeyDeriver()));
+
         this.seedModule = seedModule;
         seedService = seeds;
         this.toolkitDirectory = toolkitDirectory;
+        HonorsDiagnostics.Initialize(toolkitDirectory);
         coordinator = new ModuleCoordinator(modules, configuration, model);
         coordinator.ModuleStatusChanged += OnModuleStatusChanged;
         coordinator.Start();
@@ -127,15 +136,17 @@ public sealed class ToolkitMod : MelonMod
             ChallengeRules = null;
             MelonLogger.Error($"[Toolkit] Challenge configuration failed: {exception}");
         }
+        try { SavedGameplayRules = new GameplayRules(Path.Combine(toolkitDirectory, "gameplay-rules.json")); }
+        catch (Exception exception) { MelonLogger.Error($"[Toolkit] Rules configuration failed: {exception}"); }
         // Compose canonical commands against the same objects used by game patches.
         if (catalogAdapter is not null && SavedBans is not null && SavedFrontiers is not null
             && challengeRegistry is not null && SavedChallenges is not null
-            && StartingTileSets is not null)
+            && StartingTileSets is not null && SavedGameplayRules is not null)
         {
             try
             {
                 canonicalGrammar = GameCommandComposition.Create(catalogAdapter, SavedBans, SavedPins!,
-                    SavedFrontiers, challengeRegistry, SavedChallenges, StartingTileSets,
+                    SavedFrontiers, challengeRegistry, SavedChallenges, StartingTileSets, SavedGameplayRules,
                     seedService, () => $"Toolkit {ToolkitBuildInfo.Version}; seed module active.",
                     Path.Combine(toolkitDirectory, "Presets"));
             }
@@ -164,6 +175,8 @@ public sealed class ToolkitMod : MelonMod
             coordinator = null;
         }
 
+        CorrectiveRng?.Clear();
+        CorrectiveRng = null;
         SeedBridge = null;
         Seeds = null;
         SavedFrontiers = null;
@@ -194,6 +207,12 @@ public sealed class ToolkitMod : MelonMod
 
     public override void OnUpdate()
     {
+        if (SavedGameplayRules?.IsEnabled("neutral-tile-preview") == true)
+            NeutralPreviewProbe.EnforceVisualPreviewPosition();
+        else if (NeutralPreviewProbe.VisualPreview != null)
+            NeutralPreviewProbe.DestroyVisualPreview();
+
+        CorrectiveNeutralPlacement.RefreshPersistenceIfNeeded();
         if (SeedGenerationPatch.PendingVerificationService is { } service && SeedBridge is { } bridge)
         {
             SeedGenerationPatch.ClearPendingVerification();

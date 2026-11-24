@@ -16,6 +16,8 @@ The canonical form is **`<verb> [qualifier] <domain> [arguments]`**. This replac
 
 ## Challenges
 
+- `list rules`, `list enabled rules`, `show rules <id>`, `enable rules <ids|all>`, `disable rules <ids|all>`, `clear rules`
+- Gameplay Rules in this pre-release: `bryta-nest-reroll`, `rear-guard-longest-path`, `no-discovery`, `full-discovery`, `neutral-tile-preview`, `no-duplicate-rewards`. `no-discovery` and `full-discovery` are mutually exclusive.
 - `list challenges`, `list selected challenges`, `list active challenges`
 - `show challenges <id>`: name, author, ID, description, and known incompatibilities (incompatible selections and preset loads are rejected with an explanation)
 - `select challenges <ids|all>`, `unselect challenges <ids|all>`, `clear challenges`
@@ -29,7 +31,7 @@ The canonical form is **`<verb> [qualifier] <domain> [arguments]`**. This replac
 - `set starting tiles <shapes>`, `list starting tiles`, `inspect starting tiles`, `clear starting tiles [D1|D2|D3|D4]`. Shape count determines difficulty; relative orientations are used.
 - `set frontier diagnostics on|off`, `status frontier diagnostics`
 - `status toolkit`
-- For `frontiers`, `challenges`, `bans`, `pins`, and `starting tiles`: `save <domain> as <name>`, `load <domain> <name>`, `list <domain> presets`, `inspect <domain> preset <name>`, `delete <domain> preset <name>`.
+- For `frontiers`, `challenges`, `rules`, `bans`, `pins`, and `starting tiles`: `save <domain> as <name>`, `load <domain> <name>`, `list <domain> presets`, `inspect <domain> preset <name>`, `delete <domain> preset <name>`.
 
 Use the in-game `help` for argument validation, dynamically available catalogs, and additional registered operations. Old `seed set`, `select frontier`, `challenge ...`, `list banlists`, and `activate tileset` forms are not canonical in v0.3.0.
 

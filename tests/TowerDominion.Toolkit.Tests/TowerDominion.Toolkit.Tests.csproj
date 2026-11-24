@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\src\TowerDominion.Toolkit.Model\TowerDominion.Toolkit.Model.csproj" />
     <ProjectReference Include="..\..\src\TowerDominion.Toolkit.Modules\TowerDominion.Toolkit.Modules.csproj" />
     <ProjectReference Include="..\..\src\TowerDominion.Toolkit.Runtime\TowerDominion.Toolkit.Runtime.csproj" />
+    <ProjectReference Include="..\..\src\TowerDominion.Toolkit.Rng\TowerDominion.Toolkit.Rng.csproj" />
   </ItemGroup>
 
 </Project>

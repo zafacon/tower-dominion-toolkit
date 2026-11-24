@@ -54,10 +54,12 @@ internal static class DoctrineBanPatch
 {
     [ThreadStatic] private static bool rerolling;
 
+    private static bool IsBanned(string id) => ToolkitMod.SavedBans?.IsBanned("doctrines", id) == true
+        || DiscoveryRestrictions.IsDoctrineExcluded(ToolkitMod.SavedGameplayRules, id);
+
     private static void Postfix(SkillService __instance, SkillType skillRequested, ref SkillData __result)
     {
-        var bans = ToolkitMod.SavedBans;
-        if (rerolling || bans == null || __result == null || !bans.IsBanned("doctrines", __result.UniqueID)) return;
+        if (rerolling || __result == null || !IsBanned(__result.UniqueID)) return;
         string rejected = __result.UniqueID;
         rerolling = true;
         try
@@ -65,7 +67,7 @@ internal static class DoctrineBanPatch
             for (int attempt = 0; attempt < 256; attempt++)
             {
                 SkillData? candidate = __instance.GetRandomDoctrineData(skillRequested);
-                if (candidate == null || bans.IsBanned("doctrines", candidate.UniqueID)) continue;
+                if (candidate == null || IsBanned(candidate.UniqueID)) continue;
                 __result = candidate;
                 MelonLogger.Msg($"[Toolkit Bans] Replaced doctrine {rejected} with {candidate.UniqueID}.");
                 return;

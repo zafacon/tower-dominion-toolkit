@@ -7,7 +7,7 @@ internal static class GameCommandComposition
 {
     internal static CommandGrammar Create(ICommandCatalogSource source, BanSelections bans, PinSelections pins,
         FrontierSelections frontiers, ChallengeRegistry registry, ChallengeSelections challenges,
-        StartingTilePresets tiles, ISeedService seeds, Func<string> status, string directory)
+        StartingTilePresets tiles, GameplayRules rules, ISeedService seeds, Func<string> status, string directory)
     {
         var grammar = new CommandGrammar();
         var catalog = new CommandCatalogService(source);
@@ -15,6 +15,7 @@ internal static class GameCommandComposition
             new CatalogSelectionHandlers(new CatalogSelectionService(catalog), bans, frontiers, pins));
         CatalogQueryRegistration.Register(grammar, catalog, bans, frontiers, pins);
         ChallengeCommandRegistration.Register(grammar, registry, challenges);
+        GameplayRuleCommandRegistration.Register(grammar, rules, Path.Combine(directory, "rules"));
         StartingTileCommandRegistration.Register(grammar, tiles);
         RuntimeCommandRegistration.Register(grammar, seeds, () => FrontierDiagnostics.Enabled, enabled => FrontierDiagnostics.Enabled = enabled, status);
         PresetCommandRegistration.Register(grammar,

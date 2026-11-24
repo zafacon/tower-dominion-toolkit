@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.4.0-pre.1] — Corrective RNG and gameplay rules (pre-release)
+
+- Added isolated corrective RNG streams and persistence for Toolkit-controlled gameplay decisions, avoiding mutation of Unity's shared global RNG.
+- Added persistent Gameplay Rules, including Bryta Nest Reroll, Rear Guard Longest Path, No Discovery, Full Discovery, Neutral Tile Preview, and No Duplicate Rewards.
+- Added corrective neutral discovery placement so previewed neutral identity/position remains stable through zone transforms and final placement; Neutral Tile Preview remains independently optional.
+- Added No Duplicate Rewards to redraw repeated random blueprint or doctrine identities within one reward-choice bundle through the game's native weighted selectors.
+- Improved console input isolation while the Toolkit console is open.
+- Expanded automated coverage to 503 passing tests.
+- This is a **pre-release for broader player testing**. Native hooks and rule combinations are not exhaustively validated across all game versions and configurations.
+
 ## [0.3.2] — Native encounter pinning
 
 - Added session-only `pin` and `unpin` for regular-wave foes and final-wave encounters, with named persistent pin presets. Pins request native choice inclusion without increasing slots or bypassing encounter eligibility.

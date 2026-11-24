@@ -8,6 +8,7 @@
     <ProjectReference Include="../TowerDominion.Toolkit.Model/TowerDominion.Toolkit.Model.csproj" />
     <ProjectReference Include="../TowerDominion.Toolkit.Modules/TowerDominion.Toolkit.Modules.csproj" />
     <ProjectReference Include="../TowerDominion.Toolkit.Runtime/TowerDominion.Toolkit.Runtime.csproj" />
+    <ProjectReference Include="../TowerDominion.Toolkit.Rng/TowerDominion.Toolkit.Rng.csproj" />
     <Reference Include="0Harmony"><HintPath>$(TowerDominionGamePath)/MelonLoader/net6/0Harmony.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="MelonLoader"><HintPath>$(TowerDominionGamePath)/MelonLoader/net6/MelonLoader.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Il2CppCopper.ViewManager.Code"><HintPath>$(TowerDominionGamePath)/MelonLoader/Il2CppAssemblies/Il2CppCopper.ViewManager.Code.dll</HintPath><Private>false</Private></Reference>

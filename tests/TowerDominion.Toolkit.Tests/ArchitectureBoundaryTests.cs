@@ -22,6 +22,7 @@ public sealed class ArchitectureBoundaryTests
     [Theory]
     [InlineData("Model")]
     [InlineData("Modules")]
+    [InlineData("Rng")]
     public void SharedCodeDoesNotReferenceGameRuntimeNamespaces(string project)
     {
         string root = FindRepositoryRoot();

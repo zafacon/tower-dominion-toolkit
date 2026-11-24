@@ -75,6 +75,9 @@ internal sealed class ToolkitConsoleOverlay
     }
 
     internal bool IsVisible => visible;
+    internal static bool CapturesGameplayInput { get; private set; }
+    private static int releasedFrame = -1;
+    internal static bool BlocksGameplayInput => CapturesGameplayInput || releasedFrame == Time.frameCount || Input.GetKeyDown(KeyCode.BackQuote);
 
     internal void Draw()
     {
@@ -159,7 +162,9 @@ internal sealed class ToolkitConsoleOverlay
 
     private void SetVisible(bool value)
     {
+        if (visible && !value) releasedFrame = Time.frameCount;
         visible = value;
+        CapturesGameplayInput = value;
         if (value) Capture(); else Restore();
         MelonLogger.Msg($"[Toolkit Console] {(value ? "Opened" : "Closed")}");
     }
