@@ -12,7 +12,7 @@ repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 project="$repo_dir/src/TowerDominion.Toolkit.Game/TowerDominion.Toolkit.Game.csproj"
 version="$(sed -n 's/.*<Version>\([^<]*\)<\/Version>.*/\1/p' "$repo_dir/Directory.Build.props" | head -1)"
 
-if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
   echo "Cannot determine a valid release version." >&2
   exit 1
 fi
