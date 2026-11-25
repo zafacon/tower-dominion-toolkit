@@ -28,7 +28,7 @@ stage="$(mktemp -d)"
 trap 'rm -rf "$stage"' EXIT
 mkdir -p "$stage/Mods" "$stage/UserLibs" "$output_dir"
 cp "$source_dir/TowerDominionToolkit.dll" "$stage/Mods/"
-for name in Model Modules Runtime; do
+for name in Model Modules Runtime Rng; do
   cp "$source_dir/TowerDominion.Toolkit.$name.dll" "$stage/UserLibs/"
 done
 cat > "$stage/INSTALL.txt" <<'DOC'
