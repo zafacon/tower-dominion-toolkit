@@ -24,10 +24,12 @@ jobs:
         run: |
           set -euo pipefail
           version="${GITHUB_REF_NAME}"
+          prerelease=""
+          case "$version" in *-*) prerelease="--prerelease" ;; esac
           test -f "${version}/tower-dominion-toolkit-${version}-melonloader.zip"
           (cd "${version}" && sha256sum -c "tower-dominion-toolkit-${version}-melonloader.zip.sha256")
           gh release create "${version}" \
             "${version}/tower-dominion-toolkit-${version}-melonloader.zip" \
             "${version}/tower-dominion-toolkit-${version}-melonloader.zip.sha256" \
             --verify-tag --title "Tower Dominion Toolkit ${version}" \
-            --notes-file "${version}/RELEASE_NOTES.md"
+            --notes-file "${version}/RELEASE_NOTES.md" $prerelease

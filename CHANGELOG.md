@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.4.0-pre.2] — Gameplay fixes and Abundant Tiles (pre-release)
+
+- Add **Abundant Tiles**, providing one tile-placement opportunity every round while preserving nest rounds as their single placement.
+- Repair Armored Staging Ground Auctoritas HP upgrade targeting for the native +1250/+2500 HP effects.
+- Correct the HQ repair tooltip to include external per-battlefront doctrine repair contributions.
+- Retain the corrective RNG and gameplay Rules introduced in 0.4.0-pre.1.
+
 ## [0.4.0-pre.1] — Corrective RNG and gameplay rules (pre-release)
 
 - Added isolated corrective RNG streams and persistence for Toolkit-controlled gameplay decisions, avoiding mutation of Unity's shared global RNG.

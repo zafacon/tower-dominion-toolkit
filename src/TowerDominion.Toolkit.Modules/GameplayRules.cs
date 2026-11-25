@@ -14,6 +14,7 @@ public sealed class GameplayRules
         new GameplayRuleDescriptor("no-discovery", "No Discovery", "Prevent random neutral discoveries and exclude doctrines that increase Discovery or depend on neutral buildings. Mutually exclusive with Full Discovery."),
         new GameplayRuleDescriptor("full-discovery", "Full Discovery", "Guarantee neutral discoveries on eligible tiles and exclude doctrines and random neutral buildings whose sole benefit is Discovery. Mutually exclusive with No Discovery."),
         new GameplayRuleDescriptor("no-duplicate-rewards", "No Duplicate Rewards", "Prevent the same random blueprint or doctrine from appearing more than once within a single reward-choice bundle."),
+        new GameplayRuleDescriptor("abundant-tiles", "Abundant Tiles", "Make every round a tile-placement round; native nest placements remain the single placement for their round."),
         new GameplayRuleDescriptor("neutral-tile-preview", "Neutral Tile Preview", "Show the neutral at its exact eventual tile position while placing a zone.")
     };
 

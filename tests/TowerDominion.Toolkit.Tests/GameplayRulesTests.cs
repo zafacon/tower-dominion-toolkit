@@ -5,6 +5,27 @@ namespace TowerDominion.Toolkit.Tests;
 public sealed class GameplayRulesTests
 {
     [Fact]
+    public void AbundantTilesIsAStandardPersistentGameplayRule()
+    {
+        string dir = Path.Combine(Path.GetTempPath(), "td-toolkit-rules-" + Guid.NewGuid());
+        try
+        {
+            string path = Path.Combine(dir, "rules.json");
+            var rules = new GameplayRules(path);
+            Assert.Contains(GameplayRules.Catalog, r => r.Id == "abundant-tiles");
+
+            rules.Change(["abundant-tiles"], true);
+
+            Assert.True(rules.IsEnabled("abundant-tiles"));
+            Assert.True(new GameplayRules(path).IsEnabled("abundant-tiles"));
+        }
+        finally
+        {
+            if (Directory.Exists(dir)) Directory.Delete(dir, true);
+        }
+    }
+
+    [Fact]
     public void NoDuplicateRewardsIsAStandardPersistentGameplayRule()
     {
         string dir = Path.Combine(Path.GetTempPath(), "td-toolkit-rules-" + Guid.NewGuid());
