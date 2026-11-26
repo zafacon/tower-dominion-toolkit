@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [0.4.0-pre.3] — Blueprint Bag and combat display fixes (pre-release)
+
+- Added optional persistent Blueprint Bag, with whole-stack storage, native-style scrolling and camera input isolation. Disabled by default; incompatible with Forced Deployment.
+- Fixed Armored Staging Ground per-wave damage display to include its own Auctoritas tank damage. End-game aggregation remains pending.
+- Fixed Chain of Command compatibility with platform slots and Assault Team deployment.
+- Fixed challenge HUD teardown and modal visibility between runs and reward screens.
+- This pre-release retains the gameplay rules and RNG changes from pre.2. Broader native compatibility testing remains pending.
+
 ## [0.4.0-pre.2] — Gameplay fixes and Abundant Tiles (pre-release)
 
 - Add **Abundant Tiles**, providing one tile-placement opportunity every round while preserving nest rounds as their single placement.

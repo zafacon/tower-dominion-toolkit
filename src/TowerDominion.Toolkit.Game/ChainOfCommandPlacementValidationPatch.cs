@@ -25,6 +25,20 @@ internal static class ChainOfCommandPlacementValidationPatch
             var manager = MonoSingleton<EntityManager>.Instance;
             var hq = manager?.GetHQEntity();
             if (manager == null || hq == null || __instance.Pointer == hq.Pointer) return;
+
+            // Assault teams are deployable units represented by BuildingEntity in
+            // native code, but EntityManager tracks them separately from Buildings.
+            // Their deployment position is chosen by the game, so native placement
+            // validation is authoritative and they must not require network adjacency.
+            if (__instance.TryCast<AssaultTeamEntity>() != null) return;
+
+            // Native placement validation already guarantees that a building placed
+            // on a platform is using a valid platform slot. The platform itself was
+            // subject to Chain of Command when it was placed, so imposing ground-tile
+            // adjacency again on its child incorrectly makes platform slots unusable.
+            var parent = __instance.Parent;
+            if (parent != null && parent.TryCast<PlatformEntity>() != null) return;
+
             var candidate = Cells(__instance);
             if (candidate.Count == 0)
             {
@@ -56,6 +70,13 @@ internal static class ChainOfCommandPlacementValidationPatch
                     return;
                 }
             }
+
+            // Native validation has already accepted the placement. If the resolved
+            // footprint overlaps an existing platform, the platform is the native
+            // support and already provides the Chain of Command connection.
+            if (IsNativePlatformPlacement(__instance, candidate, manager))
+                return;
+
             var headquarters = Cells(hq);
             var buildings = new List<IReadOnlyCollection<Cell>>();
             foreach (var building in manager.Buildings)
@@ -76,6 +97,26 @@ internal static class ChainOfCommandPlacementValidationPatch
         {
             MelonLogger.Warning($"[ChainOfCommand] Placement validation failed: {exception.Message}");
         }
+    }
+
+    private static bool IsNativePlatformPlacement(
+        BuildingEntity candidate,
+        IReadOnlyCollection<Cell> candidateCells,
+        EntityManager manager)
+    {
+        if (candidate.isAPlatformType) return false;
+
+        foreach (var building in manager.Buildings)
+        {
+            if (building == null || building.Pointer == candidate.Pointer ||
+                building.IsBuildingPreview || !building.isAPlatformType) continue;
+
+            var platformCells = Cells(building);
+            if (platformCells.Count > 0 && candidateCells.Any(platformCells.Contains))
+                return true;
+        }
+
+        return false;
     }
 
     private static List<Cell> Cells(BuildingEntity building)

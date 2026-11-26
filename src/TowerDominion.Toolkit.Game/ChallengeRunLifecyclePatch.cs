@@ -14,6 +14,7 @@ internal static class ChallengeRunStartPatch
         var selections = ToolkitMod.SavedChallenges;
         if (selections == null || selections.RunActive) return;
         ChainOfCommandModalVisibility.Reset();
+        ChallengeHudOverlay.TeardownStarted = false;
         selections.StartRun();
         MelonLogger.Msg($"[Toolkit Challenges] Run snapshot: {string.Join(", ", selections.Active)}");
     }
@@ -28,6 +29,7 @@ internal static class ChallengeRunStopPatch
         var selections = ToolkitMod.SavedChallenges;
         if (selections?.RunActive != true) return;
         ChainOfCommandModalVisibility.Reset();
+        ChallengeHudOverlay.TeardownStarted = true;
         selections.EndRun();
         MelonLogger.Msg("[Toolkit Challenges] Run snapshot released.");
     }

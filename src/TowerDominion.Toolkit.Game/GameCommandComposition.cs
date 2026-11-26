@@ -11,6 +11,7 @@ internal static class GameCommandComposition
     {
         var grammar = new CommandGrammar();
         var catalog = new CommandCatalogService(source);
+        BlueprintBagPrototype.Register(grammar, catalog);
         CatalogSelectionRegistration.Register(grammar, catalog,
             new CatalogSelectionHandlers(new CatalogSelectionService(catalog), bans, frontiers, pins));
         CatalogQueryRegistration.Register(grammar, catalog, bans, frontiers, pins);

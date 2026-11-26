@@ -17,8 +17,8 @@ unzip -l dist/tower-dominion-toolkit-vX.Y.Z-melonloader.zip
 git diff --check
 ```
 
-4. Verify the ZIP contains exactly four matching Toolkit DLLs, `INSTALL.txt`, and `SHA256SUMS`; verify the internal checksums. Never bundle game/MelonLoader assemblies.
-5. Deploy the four matching DLLs only while the game is closed, after backing up the installed copies. Confirm MelonLoader startup, command help/status, challenge selection and incompatibility errors, run-start restrictions, game restart persistence, and coexistence with Tower Dominion Leak Fix. Record any unverified tests honestly.
+4. Verify the ZIP contains exactly five matching Toolkit DLLs, `INSTALL.txt`, and `SHA256SUMS`; verify the internal checksums. Never bundle game/MelonLoader assemblies.
+5. Deploy the five matching DLLs only while the game is closed, after backing up the installed copies. Confirm MelonLoader startup, command help/status, challenge selection and incompatibility errors, run-start restrictions, game restart persistence, and coexistence with Tower Dominion Leak Fix. Record any unverified tests honestly.
 
 ## Publish after explicit approval
 

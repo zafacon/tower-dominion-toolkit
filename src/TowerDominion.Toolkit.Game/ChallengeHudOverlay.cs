@@ -11,6 +11,10 @@ namespace TowerDominion.Toolkit.Game;
 /// <summary>Native Unity HUD button and active-run challenge panel.</summary>
 internal sealed class ChallengeHudOverlay
 {
+    // Native progress is cleaned before the gameplay HUD is destroyed and before
+    // MainLoopContext.Stop releases the challenge snapshot. Never touch that HUD
+    // again during this transition, even if the snapshot is still active.
+    internal static bool TeardownStarted { get; set; }
     private readonly ChallengeRegistry registry;
     private RectTransform? nativeButton;
     private ChallengePopup? popup;
@@ -20,13 +24,41 @@ internal sealed class ChallengeHudOverlay
     private RectTransform? cachedLifebar;
     private float nextPositionLookup;
     private float nextHudRetry;
+    private bool needsCleanup = true;
 
     internal ChallengeHudOverlay(ChallengeRegistry registry) => this.registry = registry;
     internal bool IsPopupVisible => popup?.IsVisible == true;
 
     internal void Draw()
     {
+        if (TeardownStarted)
+        {
+            // Native scene owns these objects; discard wrappers without calling
+            // into objects that may already have been destroyed.
+            nativeButton = null;
+            popup = null;
+            needsCleanup = true;
+            InvalidatePositionReferences();
+            nextLookup = 0f;
+            nextHudRetry = 0f;
+            return;
+        }
         var selection = ToolkitMod.SavedChallenges;
+        // The native header can survive a run transition even after we discard
+        // its managed wrappers. Sweep our own controls once gameplay resumes.
+        if (needsCleanup && selection?.RunActive == true)
+        {
+            try { RemovePreviousControls(); needsCleanup = false; }
+            catch (Exception ex)
+            {
+                if (Time.unscaledTime >= nextHudRetry)
+                {
+                    nextHudRetry = Time.unscaledTime + 2f;
+                    MelonLogger.Warning($"[Toolkit Challenges] HUD cleanup unavailable: {ex.Message}");
+                }
+                return;
+            }
+        }
         bool visible = selection?.RunActive == true && selection.Active.Count > 0;
         if (!visible)
         {
@@ -53,6 +85,22 @@ internal sealed class ChallengeHudOverlay
             nextHudRetry = Time.unscaledTime + 2f;
             HideNativeButton();
             popup?.Hide();
+        }
+    }
+
+    private static void RemovePreviousControls()
+    {
+        foreach (var right in Resources.FindObjectsOfTypeAll<RectTransform>())
+        {
+            if (right == null || !right.gameObject.scene.IsValid() || right.name != "RightPanel" ||
+                right.Find("ExpertModeUI/Button") == null) continue;
+            for (int i = right.childCount - 1; i >= 0; i--)
+            {
+                var child = right.GetChild(i);
+                if (child == null || (child.name != "ToolkitChallengeIndicator" && child.name != "ToolkitChallengesPopup")) continue;
+                child.gameObject.SetActive(false);
+                UnityEngine.Object.Destroy(child.gameObject);
+            }
         }
     }
 

@@ -14,15 +14,15 @@
 4. Start the game. The main menu should display the installed Toolkit version (matching the installed release, e.g. `TK: 0.3.2`).
 5. Press backtick (`\``) to open the console; run `status toolkit` and `help`.
 
-**All four DLLs must be updated together.** The main mod is `Mods/TowerDominionToolkit.dll`; the dependencies are `UserLibs/TowerDominion.Toolkit.Model.dll`, `TowerDominion.Toolkit.Modules.dll`, and `TowerDominion.Toolkit.Runtime.dll`.
+**All five DLLs must be updated together.** The main mod is `Mods/TowerDominionToolkit.dll`; the dependencies are `UserLibs/TowerDominion.Toolkit.Model.dll`, `TowerDominion.Toolkit.Modules.dll`, `TowerDominion.Toolkit.Runtime.dll`, and `TowerDominion.Toolkit.Rng.dll`.
 
 ## Troubleshooting
 
-- **No console or commands:** Confirm MelonLoader starts and all four DLLs came from the same release. Inspect `MelonLoader/Latest.log` for Toolkit errors.
+- **No console or commands:** Confirm MelonLoader starts and all five DLLs came from the same release. Inspect `MelonLoader/Latest.log` for Toolkit errors.
 - **No Toolkit menu label:** Confirm the mod loads in the log; the label is only shown on the main menu.
 - **Unknown command:** Run `help`, `help <verb>`, or `help <domain>`; v0.2.0 uses the canonical command grammar.
 - **Missing game entities:** Wait until the game catalog has loaded before running catalog-dependent commands.
 - **Conflicts:** Do not combine with the older `TowerDominionConsole.dll` until its patch coexistence has been validated. Compatibility with Tower Dominion Leak Fix is intended but not yet exhaustively tested.
 - **Report a reproducible issue:** Include Toolkit version, game version, MelonLoader version, relevant log excerpt, command entered, and observed versus expected result. Remove personal information from logs before sharing.
 
-Uninstall by closing the game and removing the Toolkit main DLL and its three Toolkit-specific dependency DLLs. UserData configurations can be retained for later reinstallation.
+Uninstall by closing the game and removing the Toolkit main DLL and its four Toolkit-specific dependency DLLs. UserData configurations can be retained for later reinstallation.

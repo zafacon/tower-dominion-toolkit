@@ -53,6 +53,11 @@ internal static class CorrectiveRngProgressCleanPatch
 {
     private static void Prefix()
     {
+        // This existing native hook also signals the end of gameplay UI lifetime.
+        // Independent of whether corrective RNG is enabled or attached.
+        if (ToolkitMod.SavedChallenges?.RunActive == true)
+            ChallengeHudOverlay.TeardownStarted = true;
+
         CorrectiveRngLifecycle? lifecycle = ToolkitMod.CorrectiveRng;
         if (lifecycle is null || lifecycle.Phase == CorrectiveRngLifecyclePhase.Detached)
             return;

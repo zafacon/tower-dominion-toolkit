@@ -2,6 +2,7 @@ using Il2CppNvizzio.Core.Singleton;
 using Il2CppNvizzio.Game.GamePlay.GameEntities;
 using Il2CppNvizzio.Game.GamePlay.Zones;
 using Il2CppNvizzio.Game.GamePlay.Zones.Coordinates;
+using Il2CppNvizzio.Game.Services;
 using TowerDominion.Toolkit.Modules;
 using UnityEngine;
 using Cell = TowerDominion.Toolkit.Modules.BuildingConnectivity.Cell;
@@ -39,9 +40,27 @@ internal sealed class ChainOfCommandFrontierOverlay
             diagnosticAt = Time.unscaledTime + 5f;
             MelonLoader.MelonLogger.Msg($"[ChainOfCommand overlay] active=true delay={Math.Max(0f, eligibleAt - Time.unscaledTime):F1}s menu={menuOpen} waveEnd={ChainOfCommandModalVisibility.WaveEnd} special={ChainOfCommandModalVisibility.SpecialReward} pause={ChainOfCommandModalVisibility.Pause} markers={markers.Count} status={refreshStatus}");
         }
-        if (Time.unscaledTime < eligibleAt || menuOpen || ChainOfCommandModalVisibility.IsOpen) return;
+        if (Time.unscaledTime < eligibleAt || menuOpen) return;
         try
         {
+            stage = "modal hierarchy";
+            ChainOfCommandModalVisibility.SampleViews();
+            if (ChainOfCommandModalVisibility.IsOpen) return;
+
+            // Positive gameplay gate: draw only while the native map interaction
+            // context is active (with no building details selected), or while the
+            // player is actively placing a building. Some modal screens retain these contexts, so the hierarchy gate above
+            // is also necessary.
+            var gameplay = Services.GamePlayContextService;
+            var selectionContext = gameplay?.selectBuildingContext;
+            bool selectingMap = selectionContext != null && selectionContext.selectedBuilding == null;
+            bool placingBuilding = gameplay?.placeTheNewBuildingContext != null;
+            if (!selectingMap && !placingBuilding)
+            {
+                markers.Clear();
+                return;
+            }
+
             stage = "refresh";
             if (Time.unscaledTime >= refreshAt)
             {

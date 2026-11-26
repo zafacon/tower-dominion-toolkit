@@ -31,6 +31,7 @@ public sealed class ToolkitMod : MelonMod
     internal static ChallengeEnforcement? ChallengeRules { get; private set; }
     internal static GameplayRules? SavedGameplayRules { get; private set; }
 
+    private readonly BlueprintBagPanel blueprintBagPanel = new();
     private SeedCommandInbox? commandInbox;
     private ToolkitConsoleOverlay? consoleOverlay;
     private ChallengeHudOverlay? challengeHud;
@@ -73,6 +74,7 @@ public sealed class ToolkitMod : MelonMod
         seedService = seeds;
         this.toolkitDirectory = toolkitDirectory;
         HonorsDiagnostics.Initialize(toolkitDirectory);
+        BlueprintBagPrototype.Initialize(toolkitDirectory);
         coordinator = new ModuleCoordinator(modules, configuration, model);
         coordinator.ModuleStatusChanged += OnModuleStatusChanged;
         coordinator.Start();
@@ -232,6 +234,8 @@ public sealed class ToolkitMod : MelonMod
 #if DEBUG
         ChallengeHudProbe.Update();
 #endif
+        BlueprintBagPrototype.Update();
+        blueprintBagPanel.Update(consoleOverlay?.IsVisible ?? false);
         commandInbox?.Poll();
         consoleOverlay?.Update();
     }
